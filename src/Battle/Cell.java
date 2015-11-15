@@ -11,4 +11,17 @@ public class Cell {
         this.x = x;
         this.y = y;
     }
+
+    @Override
+    public boolean equals(Object object) {
+        if(object != null && object instanceof Cell) {
+            return this.x == ((Cell) object).x && this.y == ((Cell) object).y;
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return this.x + this.y*Board.numXCells;
+    }
 }
