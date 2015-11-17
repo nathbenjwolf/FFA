@@ -1,4 +1,4 @@
-package Battle;
+package battle;
 
 import javax.swing.*;
 import java.awt.*;

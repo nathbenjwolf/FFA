@@ -1,33 +1,36 @@
-package Battle;
+package battle;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.util.*;
 import java.util.List;
 import java.util.Set;
-import character.*;
+
 import character.Character;
+import mapElement.MapElement;
 
 /**
  * Created by Nathan on 11/14/2015.
  */
 public class Board extends JPanel {
     static int cellSize = 50;
-    static int numXCells = 15;
+    static int numXCells = 10;
     static int numYCells = 10;
-    static int gridLineThickness = 4;
-    static int realCellSize = cellSize - (gridLineThickness/2);
+    static int gridLineThickness = 2;
+    static int realCellSize = cellSize - (gridLineThickness);
 
-
+    MapElement[][] map;
     Set<Cell> moveCells = new HashSet<Cell>();
 
     private Map<Character, Cell> characterLocations = new HashMap<Character, Cell>();
     private List<Character> team1;
     private List<Character> team2;
 
-    public Board(List<Character> team1, List<Character> team2) {
+    public Board(List<Character> team1, List<Character> team2, String map) {
         this.team1 = team1;
         this.team2 = team2;
+        this.map = MapParser.decodeMap(map);
 
         //TODO: Temporary code till character placement code exists
         //Team 1
@@ -42,12 +45,25 @@ public class Board extends JPanel {
     }
 
     public void paintComponent(Graphics g) {
-        g.setColor(Color.RED);
-        g.fillRect(0, 0, this.getWidth(),this.getHeight());
-
-        drawMoveCells(g);
+        drawMap(g);
         drawCharacters(g);
         drawGrid(g);
+        drawMoveCells(g);
+    }
+
+    private void drawMap(Graphics g) {
+        for(int x=0; x<map.length; x++) {
+            for(int y=0; y<map[0].length; y++) {
+                Cell TLPixel = cellToTLRealPixel(new Cell(x,y));
+                Cell BRPixel = cellToBRRealPixel(new Cell(x,y));
+                BufferedImage img = map[x][y].getImage();
+
+                g.drawImage(img,
+                        TLPixel.x, TLPixel.y, BRPixel.x+1, BRPixel.y+1, // Extra +1 because drawImage -1
+                        0, 0, img.getWidth(), img.getHeight(),
+                        null);
+            }
+        }
     }
 
     private void drawGrid(Graphics g) {
@@ -55,22 +71,22 @@ public class Board extends JPanel {
         Cell topLeftPixel;
 
         // Vertical lines
-        g.fillRect(0, 0, gridLineThickness/2, getHeight());
+        g.fillRect(0, 0, gridLineThickness, getHeight());
         for(int i=1; i<numXCells; i++) {
-            topLeftPixel = cellToPixel(new Cell(i,0));
-            g.fillRect(topLeftPixel.x-gridLineThickness/2, 0, gridLineThickness, getHeight());
+            topLeftPixel = cellToTLPixel(new Cell(i,0));
+            g.fillRect(topLeftPixel.x-gridLineThickness, 0, gridLineThickness*2, getHeight());
         }
-        topLeftPixel = cellToPixel(new Cell(numXCells,0));
-        g.fillRect(topLeftPixel.x-gridLineThickness/2, 0, gridLineThickness/2, getHeight());
+        topLeftPixel = cellToTLPixel(new Cell(numXCells,0));
+        g.fillRect(topLeftPixel.x-gridLineThickness, 0, gridLineThickness, getHeight());
 
         // Horizontal lines
-        g.fillRect(0, 0, getWidth(), gridLineThickness/2);
+        g.fillRect(0, 0, getWidth(), gridLineThickness);
         for(int i=1; i<numYCells; i++) {
-            topLeftPixel = cellToPixel(new Cell(0,i));
-            g.fillRect(0, topLeftPixel.y-gridLineThickness/2, getWidth(), gridLineThickness);
+            topLeftPixel = cellToTLPixel(new Cell(0,i));
+            g.fillRect(0, topLeftPixel.y-gridLineThickness, getWidth(), gridLineThickness*2);
         }
-        topLeftPixel = cellToPixel(new Cell(0,numYCells));
-        g.fillRect(0, topLeftPixel.y-gridLineThickness/2, getWidth(), gridLineThickness/2);
+        topLeftPixel = cellToTLPixel(new Cell(0,numYCells));
+        g.fillRect(0, topLeftPixel.y-gridLineThickness, getWidth(), gridLineThickness);
     }
 
     private void drawMoveCells(Graphics g) {
@@ -79,7 +95,7 @@ public class Board extends JPanel {
         }
 
         for(Cell cell: moveCells) {
-            drawCell(g, cell, Color.GREEN);
+            drawCellBorder(g, cell, Color.RED);
         }
     }
 
@@ -91,8 +107,17 @@ public class Board extends JPanel {
 
     private void drawCell(Graphics g, Cell cell, Color color) {
         g.setColor(color);
-        Cell topLeftPixel = cellToPixel(cell);
+        Cell topLeftPixel = cellToTLPixel(cell);
         g.fillRect(topLeftPixel.x, topLeftPixel.y, cellSize, cellSize);
+    }
+
+    private void drawCellBorder(Graphics g, Cell cell, Color color) {
+        g.setColor(color);
+        Cell topLeftPixel = cellToTLPixel(cell);
+        g.fillRect(topLeftPixel.x, topLeftPixel.y, cellSize, gridLineThickness);
+        g.fillRect(topLeftPixel.x, topLeftPixel.y, gridLineThickness, cellSize);
+        g.fillRect(topLeftPixel.x, topLeftPixel.y+cellSize-gridLineThickness, cellSize, gridLineThickness);
+        g.fillRect(topLeftPixel.x+cellSize-gridLineThickness, topLeftPixel.y, gridLineThickness, cellSize);
     }
 
     private Set<Cell> findPathableCells(Cell cell, int range) {
@@ -156,8 +181,20 @@ public class Board extends JPanel {
         }
     }
 
-    public Cell cellToPixel(Cell cell) {
+    public Cell cellToTLPixel(Cell cell) {
         return new Cell(cell.x*cellSize, cell.y*cellSize);
+    }
+
+    public Cell cellToBRPixel(Cell cell) {
+        return new Cell((cell.x+1)*cellSize-1, (cell.y+1)*cellSize-1);
+    }
+
+    public Cell cellToTLRealPixel(Cell cell) {
+        return new Cell(cell.x*cellSize+gridLineThickness, cell.y*cellSize+gridLineThickness);
+    }
+
+    public Cell cellToBRRealPixel(Cell cell) {
+        return new Cell((cell.x+1)*cellSize-gridLineThickness-1, (cell.y+1)*cellSize-gridLineThickness-1);
     }
 
     public Cell pixelToCell(int x, int y) {

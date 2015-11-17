@@ -1,4 +1,4 @@
-package Battle;
+package battle;
 
 /**
  * Created by Nathan on 11/14/2015.

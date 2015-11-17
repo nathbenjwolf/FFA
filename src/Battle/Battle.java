@@ -1,4 +1,4 @@
-package Battle;
+package battle;
 
 import javax.swing.*;
 import java.awt.*;
@@ -23,12 +23,12 @@ public class Battle extends JFrame implements MouseListener{
     public List<Character> characterOrder;
     public Character activeCharacter;
 
-    public Battle(List<Character> team1, List<Character> team2) {
+    public Battle(List<Character> team1, List<Character> team2, String map) {
         this.team1 = team1;
         this.team2 = team2;
         generateCharacterOrder();
 
-        board = new Board(team1, team2);
+        board = new Board(team1, team2, map);
         board.addMouseListener(this);
         board.showMoveCells(activeCharacter);
 
@@ -111,15 +111,7 @@ public class Battle extends JFrame implements MouseListener{
         team2.add(new Warrior(10,3,1,2));
         team2.add(new Ranger(6,2,4,3));
 
-        Battle ex = new Battle(team1, team2);
-
-//        EventQueue.invokeLater(new Runnable() {
-//            @Override
-//            public void run() {
-//                Battle ex = new Battle();
-//                ex.setVisible(true);
-//            }
-//        });
+        Battle ex = new Battle(team1, team2, "Assets/Maps/battle1.png");
     }
 
 }
