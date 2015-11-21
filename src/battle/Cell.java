@@ -12,6 +12,10 @@ public class Cell {
         this.y = y;
     }
 
+    public Cell(Cell cell) {
+        this(cell.x, cell.y);
+    }
+
     @Override
     public boolean equals(Object object) {
         if(object != null && object instanceof Cell) {

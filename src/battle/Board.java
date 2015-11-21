@@ -197,7 +197,7 @@ public class Board extends JPanel {
 
     public Set<Cell> findMoveCells(Character character, Cell cell, int range) {
         Set<Cell> pathableCells = findPathableCells(character, cell, range);
-        // Remove teammates (can't stand on the same cell)
+        // Remove teammates (can't stand on the same cell but can path through them)
         for(Character teammate : getTeam(character)) {
             if(pathableCells.contains(characterLocations.get(teammate))) {
                 pathableCells.remove(characterLocations.get(teammate));
@@ -207,9 +207,9 @@ public class Board extends JPanel {
         return pathableCells;
     }
 
-    public void showMoveCells(Character character) { //TODO: Change to pass player
+    public void showMoveCells(Character character) {
         moveCells.clear();
-        moveCells = findMoveCells(character, characterLocations.get(character), character.moveRange);
+        moveCells = findMoveCells(character, new Cell(characterLocations.get(character)), character.moveRange);
         repaint();
     }
 
