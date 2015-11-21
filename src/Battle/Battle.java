@@ -40,14 +40,14 @@ public class Battle extends JFrame implements MouseListener{
 
     private void initUI() {
         setLayout(new BorderLayout());
-        setSize(Board.cellSize*Board.numXCells+(borderLen*2), Board.cellSize*Board.numYCells+borderLen+topBorderLen+BattlePanel.panelHeight);
+        setSize(Board.cellSize*board.numXCells+(borderLen*2), Board.cellSize*board.numYCells+borderLen+topBorderLen+BattlePanel.panelHeight);
 
         // Board
-        board.setPreferredSize(new Dimension(Board.cellSize*Board.numXCells, Board.cellSize*Board.numYCells));
+        board.setPreferredSize(new Dimension(Board.cellSize*board.numXCells, Board.cellSize*board.numYCells));
         add(board, BorderLayout.NORTH);
 
         // BattlePanel
-        battlePanel.setPreferredSize(new Dimension(Board.cellSize*Board.numXCells, BattlePanel.panelHeight));
+        battlePanel.setPreferredSize(new Dimension(Board.cellSize*board.numXCells, BattlePanel.panelHeight));
         add(battlePanel, BorderLayout.SOUTH);
 
         setTitle("FFA");
@@ -111,7 +111,7 @@ public class Battle extends JFrame implements MouseListener{
         team2.add(new Warrior(10,3,1,2));
         team2.add(new Ranger(6,2,4,3));
 
-        Battle ex = new Battle(team1, team2, "Assets/Maps/battle1.png");
+        Battle ex = new Battle(team1, team2, "Assets/Maps/battle2.png");
     }
 
 }

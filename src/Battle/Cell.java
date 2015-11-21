@@ -22,6 +22,6 @@ public class Cell {
 
     @Override
     public int hashCode() {
-        return this.x + this.y*Board.numXCells;
+        return this.x + this.y*1000;
     }
 }

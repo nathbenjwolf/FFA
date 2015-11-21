@@ -4,6 +4,7 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import character.Character;
 
 /**
  * Created by Nathan on 11/16/2015.

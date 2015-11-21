@@ -1,5 +1,7 @@
 package mapElement;
 
+import character.Character;
+
 /**
  * Created by Nathan on 11/16/2015.
  */
