@@ -123,7 +123,7 @@ public class Board extends JPanel {
     }
 
     private Set<Cell> findPathableCells(Character character, Cell cell, int range) {
-        Set<Cell> cells = new HashSet<Cell>(); // Need to implement
+        Set<Cell> cells = new HashSet<Cell>();
         cells.add(new Cell(cell.x, cell.y));
 
         if(range == 0) {
@@ -135,28 +135,28 @@ public class Board extends JPanel {
         // UP
         cell.y--;
         if(cell.y >= 0 && !map[cell.x][cell.y].isElementMovementBlocking(character) && getTeamOnCell(getEnemyTeam(character),cell) == null) {
-            cells.addAll(findPathableCells(character, new Cell(cell.x, cell.y), range-1));
+            cells.addAll(findPathableCells(character, cell, range-1));
         }
         cell.y++;
 
         // DOWN
         cell.y++;
         if(cell.y < numYCells && !map[cell.x][cell.y].isElementMovementBlocking(character) && getTeamOnCell(getEnemyTeam(character),cell) == null) {
-            cells.addAll(findPathableCells(character, new Cell(cell.x, cell.y), range-1));
+            cells.addAll(findPathableCells(character, cell, range-1));
         }
         cell.y--;
 
         // LEFT
         cell.x--;
         if(cell.x >= 0 && !map[cell.x][cell.y].isElementMovementBlocking(character) && getTeamOnCell(getEnemyTeam(character),cell) == null) {
-            cells.addAll(findPathableCells(character, new Cell(cell.x, cell.y), range-1));
+            cells.addAll(findPathableCells(character, cell, range-1));
         }
         cell.x++;
 
         // RIGHT
         cell.x++;
         if(cell.x < numXCells && !map[cell.x][cell.y].isElementMovementBlocking(character) && getTeamOnCell(getEnemyTeam(character),cell) == null) {
-            cells.addAll(findPathableCells(character, new Cell(cell.x, cell.y), range-1));
+            cells.addAll(findPathableCells(character, cell, range-1));
         }
         cell.x--;
 
