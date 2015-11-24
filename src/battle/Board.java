@@ -23,9 +23,9 @@ public class Board extends JPanel {
     MapElement[][] map;
     Set<Cell> moveCells = new HashSet<Cell>();
 
-    private Map<Character, Cell> characterLocations = new HashMap<Character, Cell>();
     private List<Character> team1;
     private List<Character> team2;
+    private Map<Character, Cell> characterLocations = new HashMap<Character, Cell>();
 
     public Board(List<Character> team1, List<Character> team2, String map) {
         this.team1 = team1;
@@ -103,7 +103,14 @@ public class Board extends JPanel {
 
     private void drawCharacters(Graphics g) {
         for(Map.Entry<Character, Cell> entry : characterLocations.entrySet()) {
-            drawCell(g, entry.getValue(), entry.getKey().color);
+            Cell TLPixel = cellToTLRealPixel(entry.getValue());
+            Cell BRPixel = cellToBRRealPixel(entry.getValue());
+            BufferedImage img = entry.getKey().getImage();
+
+            g.drawImage(img,
+                    TLPixel.x, TLPixel.y, BRPixel.x+1, BRPixel.y+1, // Extra +1 because drawImage -1
+                    0, 0, img.getWidth(), img.getHeight(),
+                    null);
         }
     }
 
@@ -122,94 +129,9 @@ public class Board extends JPanel {
         g.fillRect(topLeftPixel.x+cellSize-gridLineThickness, topLeftPixel.y, gridLineThickness, cellSize);
     }
 
-    private Set<Cell> findPathableCells(Character character, Cell cell, int range) {
-        Set<Cell> cells = new HashSet<Cell>();
-        cells.add(new Cell(cell.x, cell.y));
-
-        if(range == 0) {
-            return cells;
-        }
-
-        // Cannot pass movement blocking cells or enemy units
-
-        // UP
-        cell.y--;
-        if(cell.y >= 0 && !map[cell.x][cell.y].isElementMovementBlocking(character) && getTeamOnCell(getEnemyTeam(character),cell) == null) {
-            cells.addAll(findPathableCells(character, cell, range-1));
-        }
-        cell.y++;
-
-        // DOWN
-        cell.y++;
-        if(cell.y < numYCells && !map[cell.x][cell.y].isElementMovementBlocking(character) && getTeamOnCell(getEnemyTeam(character),cell) == null) {
-            cells.addAll(findPathableCells(character, cell, range-1));
-        }
-        cell.y--;
-
-        // LEFT
-        cell.x--;
-        if(cell.x >= 0 && !map[cell.x][cell.y].isElementMovementBlocking(character) && getTeamOnCell(getEnemyTeam(character),cell) == null) {
-            cells.addAll(findPathableCells(character, cell, range-1));
-        }
-        cell.x++;
-
-        // RIGHT
-        cell.x++;
-        if(cell.x < numXCells && !map[cell.x][cell.y].isElementMovementBlocking(character) && getTeamOnCell(getEnemyTeam(character),cell) == null) {
-            cells.addAll(findPathableCells(character, cell, range-1));
-        }
-        cell.x--;
-
-        return cells;
-    }
-
-    private Set<Cell> findRadialCells(Cell cell, int radius) {
-        Set<Cell> cells = new HashSet<Cell>();
-        cells.add(cell);
-
-        if(radius == 0) {
-            return cells;
-        }
-
-        if(cell.y-1 >= 0) {
-            //UP
-            cells.addAll(findRadialCells(new Cell(cell.x, cell.y-1), radius-1));
-        }
-        if(cell.y+1 < numYCells) {
-            //DOWN
-            cells.addAll(findRadialCells(new Cell(cell.x, cell.y+1), radius-1));
-        }
-        if(cell.x-1 >= 0) {
-            //LEFT
-            cells.addAll(findRadialCells(new Cell(cell.x-1, cell.y), radius-1));
-        }
-        if(cell.x+1 < numXCells) {
-            //RIGHT
-            cells.addAll(findRadialCells(new Cell(cell.x+1, cell.y), radius-1));
-        }
-
-        return cells;
-    }
-
-    private Set<Cell> findProjectileCells(Cell cell, int range) {
-        return new HashSet<Cell>(); // Need to implement
-    }
-
-    public Set<Cell> findMoveCells(Character character, Cell cell, int range) {
-        Set<Cell> pathableCells = findPathableCells(character, cell, range);
-        // Remove teammates (can't stand on the same cell but can path through them)
-        for(Character teammate : getTeam(character)) {
-            if(pathableCells.contains(characterLocations.get(teammate))) {
-                pathableCells.remove(characterLocations.get(teammate));
-            }
-        }
-
-        return pathableCells;
-    }
-
     public void showMoveCells(Character character) {
         moveCells.clear();
-        moveCells = findMoveCells(character, new Cell(characterLocations.get(character)), character.moveRange);
+        moveCells = character.getMovementCells(map, getTeamLocations(character), getEnemyLocations(character), characterLocations.get(character));
         repaint();
     }
 
@@ -241,7 +163,27 @@ public class Board extends JPanel {
     }
 
     private List<Character> getEnemyTeam(Character character) {
-        return team1.contains(character) ? team2 : team1;
+        return team2.contains(character) ? team1 : team2;
+    }
+
+    private Set<Cell> getTeamLocations(Character character) {
+        List<Character> team = getTeam(character);
+        Set<Cell> teamLocations = new HashSet<>();
+        for(Character teammate : team) {
+            teamLocations.add(characterLocations.get(teammate));
+        }
+
+        return teamLocations;
+    }
+
+    private Set<Cell> getEnemyLocations(Character character) {
+        List<Character> team = getEnemyTeam(character);
+        Set<Cell> teamLocations = new HashSet<>();
+        for(Character teammate : team) {
+            teamLocations.add(characterLocations.get(teammate));
+        }
+
+        return teamLocations;
     }
 
     public Cell cellToTLPixel(Cell cell) {
