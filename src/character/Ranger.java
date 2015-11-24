@@ -15,7 +15,7 @@ public class Ranger extends Character {
     public Ranger(int health, int damage, int attackRange, int moveRange) {
         super(health, damage, attackRange, moveRange);
         color = Color.MAGENTA;
-        imageFilename = "Assets/Characters/Taylor.png";
+        imageFilename = "Assets/Characters/Archer.png";
     }
 
     @Override
