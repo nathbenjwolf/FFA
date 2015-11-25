@@ -14,8 +14,8 @@ import mapElement.MapElement;
  * Created by Nathan on 11/14/2015.
  */
 public class Board extends JPanel {
-    static int cellSize = 50;
-    static int gridLineThickness = 3;
+    static int cellSize = 75;
+    static int gridLineThickness = 4;
     static int realCellSize = cellSize - (gridLineThickness);
 
     int numXCells;

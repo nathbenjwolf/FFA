@@ -13,8 +13,8 @@ import character.Character;
  * Created by Nathan on 11/14/2015.
  */
 public class Battle extends JFrame implements MouseListener{
-    static int topBorderLen = 30;
-    static int borderLen = 8;
+    static int topBorderLen = 25; // 30 if setResizable isn't false
+    static int borderLen = 3; // 8 if setResizable isn't false
 
     private Board board;
     private BattlePanel battlePanel;
@@ -49,6 +49,8 @@ public class Battle extends JFrame implements MouseListener{
         // BattlePanel
         battlePanel.setPreferredSize(new Dimension(Board.cellSize*board.numXCells, BattlePanel.panelHeight));
         add(battlePanel, BorderLayout.SOUTH);
+
+        setResizable(false);
 
         setTitle("FFA");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

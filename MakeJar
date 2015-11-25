@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+mkdir out
+echo "Compiling Code..."
+javac src/*/* -d out
+echo "Compressing into Jar..."
+jar cfe game.jar battle.Battle -C out/./ .
+echo "Cleaning up..."
+rm -rf out
+echo "Done!"

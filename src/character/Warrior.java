@@ -10,6 +10,6 @@ public class Warrior extends Character {
     public Warrior(int health, int damage, int attackRange, int moveRange) {
         super(health, damage, attackRange, moveRange);
         color = Color.CYAN;
-        imageFilename = "Assets/Characters/Knight.png";
+        imageFilename = "Assets/Characters/warrior.png";
     }
 }
