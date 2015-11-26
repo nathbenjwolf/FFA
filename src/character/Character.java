@@ -7,6 +7,8 @@ import utils.PathFinding;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -38,11 +40,19 @@ public abstract class Character {
         BufferedImage img = null;
         try {
             img = ImageIO.read(new File(imageFilename));
+            img = flipImageHorizontal(img);
         } catch (IOException e) {
             System.err.println("Character.getImage(): Error reading file: " + imageFilename);
         }
 
         return img;
+    }
+
+    private BufferedImage flipImageHorizontal(BufferedImage img) {
+        AffineTransform tx = AffineTransform.getScaleInstance(-1, 1);
+        tx.translate(-img.getWidth(null), 0);
+        AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+        return op.filter(img, null);
     }
 
     public Set<Cell> getMovementCells(MapElement[][] map, Set<Cell> teamLocations, Set<Cell> enemyLocations, Cell cell) {

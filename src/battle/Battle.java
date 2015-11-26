@@ -8,6 +8,8 @@ import java.util.Collections;
 import java.util.List;
 import character.*;
 import character.Character;
+import gameState.GameState;
+import gameState.MenuState;
 
 /**
  * Created by Nathan on 11/14/2015.
@@ -22,18 +24,19 @@ public class Battle extends JFrame implements MouseListener{
     public List<Character> team2;
     public List<Character> characterOrder;
     public Character activeCharacter;
+    public GameState currentGameState;
 
     public Battle(List<Character> team1, List<Character> team2, String map) {
         this.team1 = team1;
         this.team2 = team2;
-        generateCharacterOrder();
 
         board = new Board(team1, team2, map);
         board.addMouseListener(this);
-        board.showMoveCells(activeCharacter);
 
         battlePanel = new BattlePanel();
         battlePanel.addMouseListener(this);
+
+        generateCharacterOrder();
 
         initUI();
     }
@@ -64,10 +67,11 @@ public class Battle extends JFrame implements MouseListener{
         characterOrder.addAll(team1);
         characterOrder.addAll(team2);
         Collections.shuffle(characterOrder);
-        activeCharacter = characterOrder.get(0);
+        activeCharacter = characterOrder.get(characterOrder.size()-1);
+        nextCharacterTurn();
     }
 
-    private void nextCharacterTurn() {
+    public void nextCharacterTurn() {
         int charIndex = characterOrder.indexOf(activeCharacter);
         charIndex++;
         if(charIndex == characterOrder.size()) {
@@ -75,6 +79,8 @@ public class Battle extends JFrame implements MouseListener{
         }
 
         activeCharacter = characterOrder.get(charIndex);
+
+        currentGameState = new MenuState(this, board, battlePanel);
     }
 
     @Override
@@ -84,12 +90,10 @@ public class Battle extends JFrame implements MouseListener{
             System.err.println("Board was clicked: (" + e.getX() + "," + e.getY() + ")");
             Cell cell = board.pixelToCell(e.getX(), e.getY());
             System.err.println("Board was clicked: (" + cell.x + "," + cell.y + ")");
-            if(board.moveCharacter(activeCharacter, cell)) {
-                nextCharacterTurn();
-                board.showMoveCells(activeCharacter);
-            }
+            currentGameState.onBoardClicked(cell);
         } else if(sourcePanel instanceof BattlePanel) {
             System.err.println("BattlePanel was clicked: (" + e.getX() + "," + e.getY() + ")");
+            currentGameState.onBattlePanelClicked(e.getX(), e.getY());
         } else {
             System.err.println("Nothing was clicked?");
         }

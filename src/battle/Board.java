@@ -142,6 +142,7 @@ public class Board extends JPanel {
     public boolean moveCharacter(Character character, Cell cell) {
         if(isMoveableCell(cell)) {
             characterLocations.put(character, cell);
+            moveCells.clear();
             repaint();
             return true;
         } else {
