@@ -23,8 +23,11 @@ public class Battle extends JFrame implements MouseListener{
     public List<Character> team1;
     public List<Character> team2;
     public List<Character> characterOrder;
-    public Character activeCharacter;
     public GameState currentGameState;
+
+    public Character activeCharacter;
+    public boolean hasActioned = false;
+    public boolean hasMoved = false;
 
     public Battle(List<Character> team1, List<Character> team2, String map) {
         this.team1 = team1;
@@ -78,6 +81,8 @@ public class Battle extends JFrame implements MouseListener{
             charIndex = 0;
         }
 
+        hasActioned = false;
+        hasMoved = false;
         activeCharacter = characterOrder.get(charIndex);
 
         currentGameState = new MenuState(this, board, battlePanel);
@@ -93,7 +98,6 @@ public class Battle extends JFrame implements MouseListener{
             currentGameState.onBoardClicked(cell);
         } else if(sourcePanel instanceof BattlePanel) {
             System.err.println("BattlePanel was clicked: (" + e.getX() + "," + e.getY() + ")");
-            currentGameState.onBattlePanelClicked(e.getX(), e.getY());
         } else {
             System.err.println("Nothing was clicked?");
         }

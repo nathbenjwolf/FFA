@@ -135,6 +135,11 @@ public class Board extends JPanel {
         repaint();
     }
 
+    public void clearMoveCells() {
+        moveCells.clear();
+        repaint();
+    }
+
     private boolean isMoveableCell(Cell cell) {
         return moveCells.contains(cell);
     }

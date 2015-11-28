@@ -5,6 +5,10 @@ import battle.BattlePanel;
 import battle.Board;
 import battle.Cell;
 
+import java.awt.event.ActionEvent;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by Nathan on 11/25/2015.
  */
@@ -16,17 +20,28 @@ public class MoveTargetState extends GameState {
     @Override
     protected void onInit() {
         board.showMoveCells(battle.activeCharacter);
+        List<String> buttonNames = new ArrayList<>();
+        addButtons(buttonNames, true);
     }
 
     @Override
     public void onBoardClicked(Cell cell) {
         if(board.moveCharacter(battle.activeCharacter, cell)) {
-            battle.nextCharacterTurn();
+            battle.hasMoved = true;
+            battle.currentGameState = new MenuState(battle, board, battlePanel);
         }
     }
 
     @Override
-    public void onBattlePanelClicked(int pixelX, int pixelY) {
+    public void actionPerformed(ActionEvent e) {
+        String command = e.getActionCommand();
 
+        switch(command) {
+            case backStringName:
+                System.err.println("Back btn pressed");
+                board.clearMoveCells();
+                battle.currentGameState = new MenuState(battle, board, battlePanel);
+                break;
+        }
     }
 }
