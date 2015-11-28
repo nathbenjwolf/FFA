@@ -1,5 +1,7 @@
 package character;
 
+import ability.WarriorAttackAbility;
+
 import java.awt.*;
 
 /**
@@ -7,8 +9,9 @@ import java.awt.*;
  */
 public class Warrior extends Character {
 
-    public Warrior(int health, int damage, int attackRange, int moveRange) {
-        super(health, damage, attackRange, moveRange);
+    public Warrior(int health, int moveRange) {
+        super(health, moveRange);
+        attack = new WarriorAttackAbility();
         color = Color.CYAN;
         imageFilename = "Assets/Characters/warrior.png";
     }

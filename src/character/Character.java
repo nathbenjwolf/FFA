@@ -1,5 +1,6 @@
 package character;
 
+import ability.Ability;
 import battle.Cell;
 import mapElement.MapElement;
 import utils.Globals;
@@ -20,18 +21,17 @@ import java.util.Set;
 
 //TODO: Update character with other features (equipment, abilities... etc)
 public abstract class Character {
-    public int health;
-    public int damage;
-    public int attackRange;
+    public int totalHealth;
+    public int currentHealth;
     public int moveRange;
+    public Ability attack;
     public Color color;
     protected int characterId;
     protected String imageFilename;
 
-    public Character(int health, int damage, int attackRange, int moveRange) {
-        this.health = health;
-        this.damage = damage;
-        this.attackRange = attackRange;
+    public Character(int totalHealth, int moveRange) {
+        this.totalHealth = totalHealth;
+        this.currentHealth = this.totalHealth;
         this.moveRange = moveRange;
         this.characterId = Globals.getCharacterId();
     }
@@ -54,6 +54,11 @@ public abstract class Character {
         AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
         return op.filter(img, null);
     }
+
+    public void takeDamage(Character source, int damage) {
+        this.currentHealth -= damage;
+    }
+    public boolean isDead() { return this.currentHealth <= 0; }
 
     public Set<Cell> getMovementCells(MapElement[][] map, Set<Cell> teamLocations, Set<Cell> enemyLocations, Cell cell) {
         Set<Cell> movementCells = PathFinding.findPathableCells(map, enemyLocations, this, cell, this.moveRange);

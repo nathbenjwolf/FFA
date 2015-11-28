@@ -52,18 +52,16 @@ public class MenuState extends GameState {
     @Override
     public void actionPerformed(ActionEvent e) {
         String command = e.getActionCommand();
+        System.err.println( command + " button pressed");
 
         switch(command) {
             case actionStringName:
-                System.err.println("Action btn pressed");
-                battle.currentGameState = new MoveTargetState(battle, board, battlePanel);
+                battle.currentGameState = new ActionState(battle, board, battlePanel);
                 break;
             case moveStringName:
-                System.err.println("Move btn pressed");
                 battle.currentGameState = new MoveTargetState(battle, board, battlePanel);
                 break;
             case endTurnStringName:
-                System.err.println("End turn btn pressed");
                 battle.nextCharacterTurn(); // TODO: Change to facingTargetState once implemented
                 break;
         }

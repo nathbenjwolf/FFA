@@ -66,7 +66,7 @@ public class Battle extends JFrame implements MouseListener{
     }
 
     private void generateCharacterOrder() {
-        characterOrder = new ArrayList<Character>();
+        characterOrder = new ArrayList<>();
         characterOrder.addAll(team1);
         characterOrder.addAll(team2);
         Collections.shuffle(characterOrder);
@@ -74,7 +74,19 @@ public class Battle extends JFrame implements MouseListener{
         nextCharacterTurn();
     }
 
+    public void updateCharacterOrder() {
+        List<Character> newCharacterOrder = new ArrayList<>();
+        for(Character character : characterOrder) {
+            if(team1.contains(character) || team2.contains(character)) {
+                newCharacterOrder.add(character);
+            }
+        }
+
+        characterOrder = newCharacterOrder;
+    }
+
     public void nextCharacterTurn() {
+        updateCharacterOrder();
         int charIndex = characterOrder.indexOf(activeCharacter);
         charIndex++;
         if(charIndex == characterOrder.size()) {
@@ -114,12 +126,12 @@ public class Battle extends JFrame implements MouseListener{
 
     public static void main(String[] args) {
         List<Character> team1 = new ArrayList<Character>();
-        team1.add(new Warrior(10,3,1,2));
-        team1.add(new Ranger(6,2,4,3));
+        team1.add(new Warrior(10,2));
+        team1.add(new Ranger(6,3));
 
         List<Character> team2 = new ArrayList<Character>();
-        team2.add(new Warrior(10,3,1,2));
-        team2.add(new Ranger(6,2,4,3));
+        team2.add(new Warrior(10,2));
+        team2.add(new Ranger(6,3));
 
         Battle ex = new Battle(team1, team2, "Assets/Maps/battle2.png");
     }

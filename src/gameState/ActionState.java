@@ -10,26 +10,28 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by Nathan on 11/25/2015.
+ * Created by Nathan on 11/28/2015.
  */
-public class MoveTargetState extends GameState {
-    public MoveTargetState(Battle battle, Board board, BattlePanel battlePanel) {
+public class ActionState extends GameState {
+    static final String attackStringName = "Attack";
+    static final String abilityStringName = "Ability";
+
+    public ActionState(Battle battle, Board board, BattlePanel battlePanel) {
         super(battle, board, battlePanel);
     }
 
     @Override
     protected void onInit() {
-        board.showMoveCells(battle.activeCharacter);
         List<String> buttonNames = new ArrayList<>();
+        buttonNames.add(attackStringName);
+        buttonNames.add(abilityStringName);
+
         addButtons(buttonNames, true);
     }
 
     @Override
     public void onBoardClicked(Cell cell) {
-        if(board.moveCharacter(battle.activeCharacter, cell)) {
-            battle.hasMoved = true;
-            battle.currentGameState = new MenuState(battle, board, battlePanel);
-        }
+
     }
 
     @Override
@@ -38,8 +40,13 @@ public class MoveTargetState extends GameState {
         System.err.println( command + " button pressed");
 
         switch(command) {
+            case attackStringName:
+                battle.currentGameState = new AttackTargetState(battle, board, battlePanel);
+                break;
+            case abilityStringName:
+                // TODO: Change to abilityState once implemented
+                break;
             case backStringName:
-                board.clearMoveCells();
                 battle.currentGameState = new MenuState(battle, board, battlePanel);
                 break;
         }

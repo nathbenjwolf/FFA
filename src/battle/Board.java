@@ -7,6 +7,7 @@ import java.util.*;
 import java.util.List;
 import java.util.Set;
 
+import ability.Ability;
 import character.Character;
 import mapElement.MapElement;
 
@@ -21,11 +22,13 @@ public class Board extends JPanel {
     int numXCells;
     int numYCells;
     MapElement[][] map;
-    Set<Cell> moveCells = new HashSet<Cell>();
+    Set<Cell> moveCells = new HashSet<>();
+    Set<Cell> abilityTargetCells = new HashSet<>();
+    Set<Cell> abilityRangeCells = new HashSet<>();
 
     private List<Character> team1;
     private List<Character> team2;
-    private Map<Character, Cell> characterLocations = new HashMap<Character, Cell>();
+    private Map<Character, Cell> characterLocations = new HashMap<>();
 
     public Board(List<Character> team1, List<Character> team2, String map) {
         this.team1 = team1;
@@ -51,6 +54,7 @@ public class Board extends JPanel {
         drawCharacters(g);
         drawGrid(g);
         drawMoveCells(g);
+        drawAbilityCells(g);
     }
 
     private void drawMap(Graphics g) {
@@ -101,6 +105,16 @@ public class Board extends JPanel {
         }
     }
 
+    private void drawAbilityCells(Graphics g) {
+        for(Cell cell: abilityRangeCells) {
+            drawCellBorder(g, cell, Color.YELLOW);
+        }
+
+        for(Cell cell: abilityTargetCells) {
+            drawCellBorder(g, cell, Color.MAGENTA);
+        }
+    }
+
     private void drawCharacters(Graphics g) {
         for(Map.Entry<Character, Cell> entry : characterLocations.entrySet()) {
             Cell TLPixel = cellToTLRealPixel(entry.getValue());
@@ -147,12 +161,66 @@ public class Board extends JPanel {
     public boolean moveCharacter(Character character, Cell cell) {
         if(isMoveableCell(cell)) {
             characterLocations.put(character, cell);
-            moveCells.clear();
-            repaint();
+            clearMoveCells();
             return true;
         } else {
             return false;
         }
+    }
+
+    public void showAbilityCells(Character character, Ability ability) {
+        abilityTargetCells.clear();
+        abilityRangeCells.clear();
+        List<Set<Cell>> abilityCells = ability.getAttackCells(map, getTeamLocations(character), getEnemyLocations(character), characterLocations.get(character));
+        abilityTargetCells = abilityCells.get(0);
+        abilityRangeCells = abilityCells.get(1);
+        repaint();
+    }
+
+    public void clearAbilityCells() {
+        abilityTargetCells.clear();
+        abilityRangeCells.clear();
+        repaint();
+    }
+
+    private boolean isAbilityCell(Cell cell) {
+        return abilityTargetCells.contains(cell);
+    }
+
+    public boolean useAbility(Character character, Ability ability, Cell cell) {
+        if(isAbilityCell(cell)) {
+            ability.useAbility(map, characterLocations, character, cell);
+            updateCharacterStatus();
+            clearAbilityCells();
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private void updateCharacterStatus() {
+        // Check for dead characters on both teams
+        List<Character> deadCharacters = new ArrayList<>();
+        for(Character character : characterLocations.keySet()) {
+            if(character.isDead()) {
+                deadCharacters.add(character);
+            }
+        }
+
+        for(Character deadCharacter : deadCharacters) {
+            team1.remove(deadCharacter);
+            team2.remove(deadCharacter);
+            characterLocations.remove(deadCharacter);
+        }
+    }
+
+    private Character getCharacterOnCell(Cell cell) {
+        for(Character character : characterLocations.keySet()) {
+            if(characterLocations.get(character).equals(cell)) {
+                return character;
+            }
+        }
+        return null;
     }
 
     private Character getTeamOnCell(List<Character> team, Cell cell) {

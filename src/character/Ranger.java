@@ -1,5 +1,6 @@
 package character;
 
+import ability.RangerAttackAbility;
 import battle.Cell;
 import mapElement.MapElement;
 import utils.PathFinding;
@@ -12,8 +13,9 @@ import java.util.Set;
  */
 public class Ranger extends Character {
 
-    public Ranger(int health, int damage, int attackRange, int moveRange) {
-        super(health, damage, attackRange, moveRange);
+    public Ranger(int health, int moveRange) {
+        super(health, moveRange);
+        attack = new RangerAttackAbility();
         color = Color.MAGENTA;
         imageFilename = "Assets/Characters/Archer2.png";
     }
