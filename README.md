@@ -17,6 +17,7 @@ git add \<file path\> - add a single file to the commit <br>
 git commit -m "\<commit message\>" - commit added (green) files to local repo <br>
 git push origin master - push your commit to the remote repo <br>
 git pull - pull changes pushed to the remote repo by someone else <br>
+git checkout \<file path\> - revert changes to a file <br>
 
 ### Bash Commands
 pwd - see current working directory \(path\) <br>
