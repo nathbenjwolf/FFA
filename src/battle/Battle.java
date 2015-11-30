@@ -15,8 +15,8 @@ import gameState.MenuState;
  * Created by Nathan on 11/14/2015.
  */
 public class Battle extends JFrame implements MouseListener{
-    static int topBorderLen = 25; // 30 if setResizable isn't false
-    static int borderLen = 3; // 8 if setResizable isn't false
+    static int topBorderLen = 0; // 30 if setResizable isn't false
+    static int borderLen = 0; // 8 if setResizable isn't false
 
     private Board board;
     private BattlePanel battlePanel;
@@ -46,7 +46,7 @@ public class Battle extends JFrame implements MouseListener{
 
     private void initUI() {
         setLayout(new BorderLayout());
-        setSize(Board.cellSize*board.numXCells+(borderLen*2), Board.cellSize*board.numYCells+borderLen+topBorderLen+BattlePanel.panelHeight);
+        //setSize(Board.cellSize*board.numXCells+(borderLen*2), Board.cellSize*board.numYCells+borderLen+topBorderLen+BattlePanel.panelHeight);
 
         // Board
         board.setPreferredSize(new Dimension(Board.cellSize*board.numXCells, Board.cellSize*board.numYCells));
@@ -57,6 +57,7 @@ public class Battle extends JFrame implements MouseListener{
         add(battlePanel, BorderLayout.SOUTH);
 
         setResizable(false);
+        pack();
 
         setTitle("FFA");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -126,12 +127,16 @@ public class Battle extends JFrame implements MouseListener{
 
     public static void main(String[] args) {
         List<Character> team1 = new ArrayList<Character>();
-        team1.add(new Warrior(10,2));
-        team1.add(new Ranger(6,3));
+        team1.add(new Warrior(10,3));
+        team1.add(new Ranger(7,2));
+        team1.add(new Wizard(5,2));
+        team1.add(new Priest(6,3));
 
         List<Character> team2 = new ArrayList<Character>();
-        team2.add(new Warrior(10,2));
-        team2.add(new Ranger(6,3));
+        team2.add(new Warrior(10,3));
+        team2.add(new Ranger(7,2));
+        team2.add(new Wizard(5,2));
+        team2.add(new Priest(6,3));
 
         Battle ex = new Battle(team1, team2, "Assets/Maps/battle2.png");
     }

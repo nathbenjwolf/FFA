@@ -5,6 +5,6 @@ package ability;
  */
 public class WarriorAttackAbility extends EnemyTargetAbility {
     public WarriorAttackAbility() {
-        super(7,1);
+        super(8,1);
     }
 }

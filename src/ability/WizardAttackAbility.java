@@ -7,8 +7,8 @@ import java.util.List;
 /**
  * Created by Nathan on 11/28/2015.
  */
-public class RangerAttackAbility extends EnemyTargetAbility {
-    public RangerAttackAbility() {
-        super(4, 5);
+public class WizardAttackAbility extends EnemyTargetAbility {
+    public WizardAttackAbility() {
+        super(6, 4);
     }
 }

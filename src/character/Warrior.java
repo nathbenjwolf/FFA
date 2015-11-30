@@ -13,6 +13,6 @@ public class Warrior extends Character {
         super(health, moveRange);
         attack = new WarriorAttackAbility();
         color = Color.CYAN;
-        imageFilename = "Assets/Characters/warrior.png";
+        imageFilename = "Assets/Characters/knight.png";
     }
 }
