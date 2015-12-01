@@ -18,6 +18,9 @@ public class Board extends JPanel {
     static int cellSize = 75;
     static int gridLineThickness = 4;
     static int realCellSize = cellSize - (gridLineThickness);
+    static int healthBarPadding = (int) ((double)Board.realCellSize * 0.05);
+    static int healthBarWidth = (int) ((double)Board.realCellSize * 0.7);
+    static int healthBarHeight = (int) ((double)Board.realCellSize * 0.1);
 
     int numXCells;
     int numYCells;
@@ -119,13 +122,32 @@ public class Board extends JPanel {
         for(Map.Entry<Character, Cell> entry : characterLocations.entrySet()) {
             Cell TLPixel = cellToTLRealPixel(entry.getValue());
             Cell BRPixel = cellToBRRealPixel(entry.getValue());
+            // Character image
             BufferedImage img = entry.getKey().getImage();
 
             g.drawImage(img,
                     TLPixel.x, TLPixel.y, BRPixel.x+1, BRPixel.y+1, // Extra +1 because drawImage -1
                     0, 0, img.getWidth(), img.getHeight(),
                     null);
+
+            // Health bar
+            drawHealthBar(g, entry.getValue(), entry.getKey());
         }
+    }
+
+    private void drawHealthBar(Graphics g, Cell cell, Character character) {
+        Cell TLPixel = cellToTLRealPixel(cell);
+        TLPixel.x += healthBarPadding;
+        TLPixel.y += healthBarPadding;
+
+        // Health bar border
+        g.setColor(Color.WHITE);
+        g.drawRect(TLPixel.x, TLPixel.y, healthBarWidth, healthBarHeight);
+
+        // Health bar contents
+        g.setColor(Color.RED);
+        int healthWidth = (int)((double)(healthBarWidth-2) * ((double)character.currentHealth/(double)character.totalHealth));
+        g.fillRect(TLPixel.x+1, TLPixel.y+1, healthWidth, healthBarHeight-2);
     }
 
     private void drawCell(Graphics g, Cell cell, Color color) {
