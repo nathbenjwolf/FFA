@@ -146,8 +146,8 @@ public class Board extends JPanel {
 
         // Health bar contents
         g.setColor(Color.RED);
-        int healthWidth = (int)((double)(healthBarWidth-2) * ((double)character.currentHealth/(double)character.totalHealth));
-        g.fillRect(TLPixel.x+1, TLPixel.y+1, healthWidth, healthBarHeight-2);
+        int healthWidth = (int)((double)(healthBarWidth-1) * ((double)character.currentHealth/(double)character.totalHealth));
+        g.fillRect(TLPixel.x+1, TLPixel.y+1, healthWidth, healthBarHeight-1);
     }
 
     private void drawCell(Graphics g, Cell cell, Color color) {
