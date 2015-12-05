@@ -16,7 +16,6 @@ public class Ranger extends Character {
     public Ranger(int health, int moveRange) {
         super(health, moveRange);
         attack = new RangerAttackAbility();
-        color = Color.MAGENTA;
         imageFilename = "Assets/Characters/Archer.png";
     }
 

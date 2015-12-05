@@ -6,6 +6,7 @@ import mapElement.MapElement;
 import utils.PathFinding;
 
 import java.util.*;
+import java.util.List;
 
 /**
  * Created by Nathan on 11/28/2015.
@@ -16,22 +17,22 @@ public abstract class AlliedTargetAbility extends Ability {
     }
 
     @Override
-    public void useAbility(MapElement[][] map, Map<Character, Cell> characterLocations, Character sourceCharacter, Cell cell) {
-        for(Character character : characterLocations.keySet()) {
-            if(characterLocations.get(character).equals(cell)) {
-                applyAbility(sourceCharacter, character);
+    public void useAbility(MapElement[][] map, List<Character> team, List<Character> enemyTeam, Character sourceCharacter, Cell targetCell) {
+        for(Character teammate : team) {
+            if (teammate.cell.equals(targetCell)) {
+                applyAbility(sourceCharacter, teammate);
             }
         }
     }
 
     @Override
-    public List<Set<Cell>> getAttackCells(MapElement[][] map, Set<Cell> teamLocations, Set<Cell> enemyLocations, Cell cell) {
+    public List<Set<Cell>> getAttackCells(MapElement[][] map, List<Character> team, List<Character> enemyTeam, Character sourceCharacter) {
         List<Set<Cell>> abilityCells = new ArrayList<>();
-        Set<Cell> rangeCells = PathFinding.findRadialCells(map, cell, range);
+        Set<Cell> rangeCells = PathFinding.findRadialCells(map, sourceCharacter.cell, range);
         Set<Cell> attackCells = new HashSet<>();
-        for(Cell teamLocation : teamLocations) {
-            if(rangeCells.contains(teamLocation)) {
-                attackCells.add(teamLocation);
+        for(Character teammate : team) {
+            if(rangeCells.contains(teammate.cell)) {
+                attackCells.add(teammate.cell);
             }
         }
         abilityCells.add(attackCells);

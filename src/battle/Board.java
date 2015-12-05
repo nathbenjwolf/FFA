@@ -31,11 +31,15 @@ public class Board extends JPanel {
 
     private List<Character> team1;
     private List<Character> team2;
+    private List<Character> allCharacters;
     private Map<Character, Cell> characterLocations = new HashMap<>();
 
     public Board(List<Character> team1, List<Character> team2, String map) {
         this.team1 = team1;
         this.team2 = team2;
+        this.allCharacters = new ArrayList<>();
+        this.allCharacters.addAll(team1);
+        this.allCharacters.addAll(team2);
         this.map = MapParser.decodeMap(map);
         this.numXCells = this.map.length;
         this.numYCells = this.map[0].length;
@@ -43,18 +47,18 @@ public class Board extends JPanel {
         //TODO: Temporary code till character placement code exists
         //Team 1
         for(int i = 0; i < team1.size(); i++) {
-            characterLocations.put(team1.get(i), new Cell(0,i+3));
+            team1.get(i).cell = new Cell(0,i+3);
         }
 
         //Team 1
         for(int i = 0; i < team2.size(); i++) {
-            characterLocations.put(team2.get(i), new Cell(numXCells-1,i+3));
+            team2.get(i).cell = new Cell(numXCells-1,i+3);
         }
     }
 
     public void paintComponent(Graphics g) {
         drawMap(g);
-        drawCharacters(g);
+        drawCharacters(g, allCharacters);
         drawGrid(g);
         drawMoveCells(g);
         drawAbilityCells(g);
@@ -118,12 +122,12 @@ public class Board extends JPanel {
         }
     }
 
-    private void drawCharacters(Graphics g) {
-        for(Map.Entry<Character, Cell> entry : characterLocations.entrySet()) {
-            Cell TLPixel = cellToTLRealPixel(entry.getValue());
-            Cell BRPixel = cellToBRRealPixel(entry.getValue());
+    private void drawCharacters(Graphics g, List<Character> characters) {
+        for(Character character : characters) {
+            Cell TLPixel = cellToTLRealPixel(character.cell);
+            Cell BRPixel = cellToBRRealPixel(character.cell);
             // Character image
-            BufferedImage img = entry.getKey().getImage();
+            BufferedImage img = character.getImage();
 
             g.drawImage(img,
                     TLPixel.x, TLPixel.y, BRPixel.x+1, BRPixel.y+1, // Extra +1 because drawImage -1
@@ -131,12 +135,12 @@ public class Board extends JPanel {
                     null);
 
             // Health bar
-            drawHealthBar(g, entry.getValue(), entry.getKey());
+            drawHealthBar(g, character);
         }
     }
 
-    private void drawHealthBar(Graphics g, Cell cell, Character character) {
-        Cell TLPixel = cellToTLRealPixel(cell);
+    private void drawHealthBar(Graphics g, Character character) {
+        Cell TLPixel = cellToTLRealPixel(character.cell);
         TLPixel.x += healthBarPadding;
         TLPixel.y += healthBarPadding;
 
@@ -167,7 +171,7 @@ public class Board extends JPanel {
 
     public void showMoveCells(Character character) {
         moveCells.clear();
-        moveCells = character.getMovementCells(map, getTeamLocations(character), getEnemyLocations(character), characterLocations.get(character));
+        moveCells = character.getMovementCells(map, getTeam(character), getEnemyTeam(character));
         repaint();
     }
 
@@ -182,7 +186,7 @@ public class Board extends JPanel {
 
     public boolean moveCharacter(Character character, Cell cell) {
         if(isMoveableCell(cell)) {
-            characterLocations.put(character, cell);
+            character.cell = new Cell(cell);
             clearMoveCells();
             return true;
         } else {
@@ -193,7 +197,7 @@ public class Board extends JPanel {
     public void showAbilityCells(Character character, Ability ability) {
         abilityTargetCells.clear();
         abilityRangeCells.clear();
-        List<Set<Cell>> abilityCells = ability.getAttackCells(map, getTeamLocations(character), getEnemyLocations(character), characterLocations.get(character));
+        List<Set<Cell>> abilityCells = ability.getAttackCells(map, getTeam(character), getEnemyTeam(character), character);
         abilityTargetCells = abilityCells.get(0);
         abilityRangeCells = abilityCells.get(1);
         repaint();
@@ -211,7 +215,7 @@ public class Board extends JPanel {
 
     public boolean useAbility(Character character, Ability ability, Cell cell) {
         if(isAbilityCell(cell)) {
-            ability.useAbility(map, characterLocations, character, cell);
+            ability.useAbility(map, getTeam(character), getEnemyTeam(character), character, cell);
             updateCharacterStatus();
             clearAbilityCells();
             return true;
@@ -223,7 +227,7 @@ public class Board extends JPanel {
     private void updateCharacterStatus() {
         // Check for dead characters on both teams
         List<Character> deadCharacters = new ArrayList<>();
-        for(Character character : characterLocations.keySet()) {
+        for(Character character : allCharacters) {
             if(character.isDead()) {
                 deadCharacters.add(character);
             }
@@ -232,13 +236,13 @@ public class Board extends JPanel {
         for(Character deadCharacter : deadCharacters) {
             team1.remove(deadCharacter);
             team2.remove(deadCharacter);
-            characterLocations.remove(deadCharacter);
+            allCharacters.remove(deadCharacter);
         }
     }
 
     private Character getCharacterOnCell(Cell cell) {
-        for(Character character : characterLocations.keySet()) {
-            if(characterLocations.get(character).equals(cell)) {
+        for(Character character : allCharacters) {
+            if(character.cell.equals(cell)) {
                 return character;
             }
         }
@@ -247,7 +251,7 @@ public class Board extends JPanel {
 
     private Character getTeamOnCell(List<Character> team, Cell cell) {
         for(Character character : team) {
-            if(characterLocations.get(character).equals(cell)) {
+            if(character.cell.equals(cell)) {
                 return character;
             }
         }
@@ -266,7 +270,7 @@ public class Board extends JPanel {
         List<Character> team = getTeam(character);
         Set<Cell> teamLocations = new HashSet<>();
         for(Character teammate : team) {
-            teamLocations.add(characterLocations.get(teammate));
+            teamLocations.add(teammate.cell);
         }
 
         return teamLocations;
@@ -276,7 +280,7 @@ public class Board extends JPanel {
         List<Character> team = getEnemyTeam(character);
         Set<Cell> teamLocations = new HashSet<>();
         for(Character teammate : team) {
-            teamLocations.add(characterLocations.get(teammate));
+            teamLocations.add(teammate.cell);
         }
 
         return teamLocations;

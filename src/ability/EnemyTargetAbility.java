@@ -16,23 +16,23 @@ public abstract class EnemyTargetAbility extends Ability {
     }
 
     @Override
-    public void useAbility(MapElement[][] map, Map<Character, Cell> characterLocations, Character sourceCharacter, Cell cell) {
-        for(Character character : characterLocations.keySet()) {
-            if(characterLocations.get(character).equals(cell)) {
-                applyAbility(sourceCharacter, character);
+    public void useAbility(MapElement[][] map, List<Character> team, List<Character> enemyTeam, Character sourceCharacter, Cell targetCell) {
+        for(Character enemy : enemyTeam) {
+            if(enemy.cell.equals(targetCell)) {
+                applyAbility(sourceCharacter, enemy);
             }
         }
     }
 
 
     @Override
-    public List<Set<Cell>> getAttackCells(MapElement[][] map, Set<Cell> teamLocations, Set<Cell> enemyLocations, Cell cell) {
+    public List<Set<Cell>> getAttackCells(MapElement[][] map, List<Character> team, List<Character> enemyTeam, Character sourceCharacter) {
         List<Set<Cell>> abilityCells = new ArrayList<>();
-        Set<Cell> rangeCells = PathFinding.findRadialCells(map, cell, range);
+        Set<Cell> rangeCells = PathFinding.findRadialCells(map, sourceCharacter.cell, range);
         Set<Cell> attackCells = new HashSet<>();
-        for(Cell enemyLocation : enemyLocations) {
-            if(rangeCells.contains(enemyLocation)) {
-                attackCells.add(enemyLocation);
+        for(Character enemy : enemyTeam) {
+            if(rangeCells.contains(enemy.cell)) {
+                attackCells.add(enemy.cell);
             }
         }
         abilityCells.add(attackCells);

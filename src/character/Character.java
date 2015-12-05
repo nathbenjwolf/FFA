@@ -13,7 +13,9 @@ import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Set;
+import java.util.List;
 
 /**
  * Created by Nathan on 11/15/2015.
@@ -25,9 +27,9 @@ public abstract class Character {
     public int currentHealth;
     public int moveRange;
     public Ability attack;
-    public Color color;
     protected int characterId;
     protected String imageFilename;
+    public Cell cell;
 
     public Character(int totalHealth, int moveRange) {
         this.totalHealth = totalHealth;
@@ -60,12 +62,17 @@ public abstract class Character {
     }
     public boolean isDead() { return this.currentHealth <= 0; }
 
-    public Set<Cell> getMovementCells(MapElement[][] map, Set<Cell> teamLocations, Set<Cell> enemyLocations, Cell cell) {
-        Set<Cell> movementCells = PathFinding.findPathableCells(map, enemyLocations, this, cell, this.moveRange);
+    public Set<Cell> getMovementCells(MapElement[][] map, List<Character> team, List<Character> enemyTeam) {
+        // Enemy team is movement blocking
+        Set<Cell> blockingCells = new HashSet<>();
+        for(Character character : enemyTeam) {
+            blockingCells.add(character.cell);
+        }
+        Set<Cell> movementCells = PathFinding.findPathableCells(map, blockingCells, this, cell, this.moveRange);
         // Remove team locations as possible movement cells
-        for(Cell teamLocation: teamLocations) {
-            if(movementCells.contains(teamLocation)) {
-                movementCells.remove(teamLocation);
+        for(Character character: team) {
+            if(movementCells.contains(character.cell)) {
+                movementCells.remove(character.cell);
             }
         }
 

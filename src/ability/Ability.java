@@ -21,7 +21,7 @@ public abstract class Ability {
         this.range = range;
     }
 
-    public abstract void useAbility(MapElement[][] map, Map<Character, Cell> characterLocations, Character sourceCharacter, Cell cell);
+    public abstract void useAbility(MapElement[][] map, List<Character> team, List<Character> enemyTeam, Character sourceCharacter, Cell targetCell);
 
     protected void applyAbility(Character sourceCharacter, List<Character> targetCharacters) {
         for(Character targetCharacter : targetCharacters) {
@@ -33,5 +33,5 @@ public abstract class Ability {
         targetCharacter.takeDamage(sourceCharacter, damage);
     }
 
-    public abstract List<Set<Cell>> getAttackCells(MapElement[][] map, Set<Cell> teamLocations, Set<Cell> enemyLocations, Cell cell);
+    public abstract List<Set<Cell>> getAttackCells(MapElement[][] map, List<Character> team, List<Character> enemyTeam, Character sourceCharacter);
 }
