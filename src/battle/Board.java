@@ -130,15 +130,15 @@ public class Board extends JPanel implements ActionListener {
         }
 
         for(Cell cell: moveCells) {
-            drawCell(g, cell, new Color(1F, 0F, 0F, getPulseFrame()*0.5F));
-            drawCellBorder(g, cell, new Color(1F, 0F, 0F, getPulseFrame()*1F));
+            drawCell(g, cell, new Color(1F, 0.55F, 0F, getPulseFrame()*0.5F));
+            drawCellBorder(g, cell, new Color(1F, 0.55F, 0F, getPulseFrame()*1F));
         }
     }
 
     private void drawAbilityCells(Graphics g) {
         for(Cell cell: abilityRangeCells) {
-            drawCell(g, cell, new Color(1F, 0F, 0.0F, 0.3F));
-            drawCellBorder(g, cell, new Color(1F, 0F, 0.0F, 1F));
+            drawCell(g, cell, new Color(1F, 0.55F, 0.0F, 0.3F));
+            drawCellBorder(g, cell, new Color(1F, 0.55F, 0.0F, 1F));
         }
 
         for(Cell cell: abilityTargetCells) {
@@ -202,7 +202,8 @@ public class Board extends JPanel implements ActionListener {
     }
 
     private float getPulseFrame() {
-        return (float)animationTick%10/10;
+        // Pulse between 50% and 100%
+        return (((float)animationTick%10)+10)/20;
     }
 
     @Override
