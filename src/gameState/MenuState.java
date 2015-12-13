@@ -62,7 +62,7 @@ public class MenuState extends GameState {
                 battle.currentGameState = new MoveTargetState(battle, board, battlePanel);
                 break;
             case endTurnStringName:
-                battle.nextCharacterTurn(); // TODO: Change to facingTargetState once implemented
+                battle.currentGameState = new OrientationTargetState(battle, board, battlePanel);
                 break;
         }
     }

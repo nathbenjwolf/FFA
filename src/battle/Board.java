@@ -10,12 +10,15 @@ import java.util.Set;
 import ability.Ability;
 import character.Character;
 import mapElement.MapElement;
+import utils.Orientation;
+import utils.Orientation.Direction;
+import utils.PathFinding;
 
 /**
  * Created by Nathan on 11/14/2015.
  */
 public class Board extends JPanel {
-    static int cellSize = 75;
+    static int cellSize = 80;
     static int gridLineThickness = 4;
     static int realCellSize = cellSize - (gridLineThickness);
     static int healthBarPadding = (int) ((double)Board.realCellSize * 0.05);
@@ -28,6 +31,7 @@ public class Board extends JPanel {
     Set<Cell> moveCells = new HashSet<>();
     Set<Cell> abilityTargetCells = new HashSet<>();
     Set<Cell> abilityRangeCells = new HashSet<>();
+    Set<Cell> orientationCells = new HashSet<>();
 
     private List<Character> team1;
     private List<Character> team2;
@@ -48,11 +52,13 @@ public class Board extends JPanel {
         //Team 1
         for(int i = 0; i < team1.size(); i++) {
             team1.get(i).cell = new Cell(0,i+3);
+            team1.get(i).direction = Direction.RIGHT;
         }
 
         //Team 1
         for(int i = 0; i < team2.size(); i++) {
             team2.get(i).cell = new Cell(numXCells-1,i+3);
+            team2.get(i).direction = Direction.LEFT;
         }
     }
 
@@ -62,6 +68,7 @@ public class Board extends JPanel {
         drawGrid(g);
         drawMoveCells(g);
         drawAbilityCells(g);
+        drawOrientationCells(g);
     }
 
     private void drawMap(Graphics g) {
@@ -119,6 +126,12 @@ public class Board extends JPanel {
 
         for(Cell cell: abilityTargetCells) {
             drawCellBorder(g, cell, Color.MAGENTA);
+        }
+    }
+
+    private void drawOrientationCells(Graphics g) {
+        for(Cell cell: orientationCells) {
+            drawCellBorder(g, cell, Color.BLUE);
         }
     }
 
@@ -186,7 +199,7 @@ public class Board extends JPanel {
 
     public boolean moveCharacter(Character character, Cell cell) {
         if(isMoveableCell(cell)) {
-            character.cell = new Cell(cell);
+            character.moveCharacter(new Cell(cell));
             clearMoveCells();
             return true;
         } else {
@@ -222,6 +235,30 @@ public class Board extends JPanel {
         } else {
             return false;
         }
+    }
+
+    public void showOrientationCells(Character character) {
+        orientationCells.clear();
+        orientationCells = PathFinding.findRadialCells(map, character.cell, 1);
+        orientationCells.remove(character.cell);
+        repaint();
+    }
+
+    public boolean isOrientaionCell(Cell cell) { return orientationCells.contains(cell); }
+
+    public boolean orientCharacter(Character character, Cell cell) {
+        if(isOrientaionCell(cell)) {
+            character.setOrientation(Orientation.getDirection(character.cell, cell));
+            clearOrientationCells();
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public void clearOrientationCells() {
+        orientationCells.clear();
+        repaint();
     }
 
     private void updateCharacterStatus() {

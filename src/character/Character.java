@@ -4,10 +4,10 @@ import ability.Ability;
 import battle.Cell;
 import mapElement.MapElement;
 import utils.Globals;
+import utils.Orientation;
 import utils.PathFinding;
 
 import javax.imageio.ImageIO;
-import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.List;
+import utils.Orientation.Direction;
 
 /**
  * Created by Nathan on 11/15/2015.
@@ -30,6 +31,7 @@ public abstract class Character {
     protected int characterId;
     protected String imageFilename;
     public Cell cell;
+    public Direction direction;
 
     public Character(int totalHealth, int moveRange) {
         this.totalHealth = totalHealth;
@@ -42,7 +44,20 @@ public abstract class Character {
         BufferedImage img = null;
         try {
             img = ImageIO.read(new File(imageFilename));
-            img = flipImageHorizontal(img);
+            switch(direction) {
+                case UP:
+                    img = rotateImage(img, Math.PI / 2);
+                    break;
+                case DOWN:
+                    img = rotateImage(img, -Math.PI / 2);
+                    break;
+                case RIGHT:
+                    img = flipImageHorizontal(img);
+                    break;
+                case LEFT:
+                default:
+                    break;
+            }
         } catch (IOException e) {
             System.err.println("Character.getImage(): Error reading file: " + imageFilename);
         }
@@ -50,6 +65,20 @@ public abstract class Character {
         return img;
     }
 
+
+    // TEMPORARY STUFF TO INDICATE DIRECITON
+    // Later we will have images for each direction facing
+    private BufferedImage rotateImage(BufferedImage img, double theta) {
+        AffineTransform tx = new AffineTransform();
+        tx.translate(0.5*img.getWidth(), 0.5*img.getHeight());
+        tx.rotate(theta);
+        tx.translate(-0.5*img.getWidth(), -0.5*img.getHeight());
+        AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+        return op.filter(img, null);
+    }
+
+    // TEMPORARY STUFF TO INDICATE DIRECITON
+    // Later we will have images for each direction facing
     private BufferedImage flipImageHorizontal(BufferedImage img) {
         AffineTransform tx = AffineTransform.getScaleInstance(-1, 1);
         tx.translate(-img.getWidth(null), 0);
@@ -77,6 +106,15 @@ public abstract class Character {
         }
 
         return movementCells;
+    }
+
+    public void moveCharacter(Cell destination) {
+        direction = Orientation.getDirection(cell, destination);
+        cell = destination;
+    }
+
+    public void setOrientation(Direction direction) {
+        this.direction = direction;
     }
 
     @Override
