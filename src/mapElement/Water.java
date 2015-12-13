@@ -25,15 +25,15 @@ public class Water extends MapElement {
             img = ImageIO.read(new File(imageFilename));
             int numFrames = img.getWidth();
             int xPixel = (int) (tick % numFrames);
-            if(xPixel + Board.realCellSize > numFrames) {
+            if(xPixel + Board.cellSize > numFrames) {
                 // Merge the images from either end to make the animation seem infinite.
-                BufferedImage img1 = img.getSubimage(xPixel, 0, numFrames-xPixel, Board.realCellSize);
-                BufferedImage img2 = img.getSubimage(0, 0, Board.realCellSize-(numFrames-xPixel), Board.realCellSize);
-                img = new BufferedImage(Board.realCellSize, Board.realCellSize, img.getType());
+                BufferedImage img1 = img.getSubimage(xPixel, 0, numFrames-xPixel, Board.cellSize);
+                BufferedImage img2 = img.getSubimage(0, 0, Board.cellSize-(numFrames-xPixel), Board.cellSize);
+                img = new BufferedImage(Board.cellSize, Board.cellSize, img.getType());
                 img.createGraphics().drawImage(img1, 0, 0, null);
                 img.createGraphics().drawImage(img2, numFrames-xPixel, 0, null);
             } else {
-                img = img.getSubimage(xPixel, 0, Board.realCellSize, Board.realCellSize);
+                img = img.getSubimage(xPixel, 0, Board.cellSize, Board.cellSize);
             }
 
         } catch (IOException e) {

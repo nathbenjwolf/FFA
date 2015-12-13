@@ -21,14 +21,15 @@ import utils.PathFinding;
  * Created by Nathan on 11/14/2015.
  */
 public class Board extends JPanel implements ActionListener {
-    static int cellSize = 80;
-    static int gridLineThickness = 4;
-    public static int realCellSize = cellSize - (gridLineThickness);
+    public static int cellSize = 80;
+    static int gridLineThickness = 2;
+    static int realCellSize = cellSize - gridLineThickness;
     static int healthBarPadding = (int) ((double)Board.realCellSize * 0.05);
     static int healthBarWidth = (int) ((double)Board.realCellSize * 0.7);
     static int healthBarHeight = (int) ((double)Board.realCellSize * 0.1);
     static int animationTimerDelay = 100;
     public static int animationTotalTicks = 1000;
+    static int tilePulseFrames = 10;
 
     int numXCells;
     int numYCells;
@@ -101,7 +102,7 @@ public class Board extends JPanel implements ActionListener {
     }
 
     private void drawGrid(Graphics g) {
-        g.setColor(Color.BLACK);
+        g.setColor(new Color(0, 0, 0, 0.3F));
         Cell topLeftPixel;
 
         // Vertical lines
@@ -129,23 +130,27 @@ public class Board extends JPanel implements ActionListener {
         }
 
         for(Cell cell: moveCells) {
-            drawCellBorder(g, cell, Color.RED);
+            drawCell(g, cell, new Color(1F, 0F, 0F, getPulseFrame()*0.5F));
+            drawCellBorder(g, cell, new Color(1F, 0F, 0F, getPulseFrame()*1F));
         }
     }
 
     private void drawAbilityCells(Graphics g) {
         for(Cell cell: abilityRangeCells) {
-            drawCellBorder(g, cell, Color.YELLOW);
+            drawCell(g, cell, new Color(1F, 0F, 0.0F, 0.3F));
+            drawCellBorder(g, cell, new Color(1F, 0F, 0.0F, 1F));
         }
 
         for(Cell cell: abilityTargetCells) {
-            drawCellBorder(g, cell, Color.MAGENTA);
+            drawCell(g, cell, new Color(0.0F, 0.25F, 0.25F, getPulseFrame()*0.5F));
+            drawCellBorder(g, cell, new Color(0.0F, 0.25F, 0.25F, getPulseFrame()*1F));
         }
     }
 
     private void drawOrientationCells(Graphics g) {
         for(Cell cell: orientationCells) {
-            drawCellBorder(g, cell, Color.BLUE);
+            drawCell(g, cell, new Color(0.0F, 0.0F, 0.1F, getPulseFrame()*0.5F));
+            drawCellBorder(g, cell, new Color(0.0F, 0.0F, 0.1F, getPulseFrame()*1F));
         }
     }
 
@@ -194,6 +199,10 @@ public class Board extends JPanel implements ActionListener {
         g.fillRect(topLeftPixel.x, topLeftPixel.y, gridLineThickness, cellSize);
         g.fillRect(topLeftPixel.x, topLeftPixel.y+cellSize-gridLineThickness, cellSize, gridLineThickness);
         g.fillRect(topLeftPixel.x+cellSize-gridLineThickness, topLeftPixel.y, gridLineThickness, cellSize);
+    }
+
+    private float getPulseFrame() {
+        return (float)animationTick%10/10;
     }
 
     @Override
@@ -357,11 +366,11 @@ public class Board extends JPanel implements ActionListener {
     }
 
     public Cell cellToTLRealPixel(Cell cell) {
-        return new Cell(cell.x*cellSize+gridLineThickness, cell.y*cellSize+gridLineThickness);
+        return new Cell(cell.x*cellSize, cell.y*cellSize);
     }
 
     public Cell cellToBRRealPixel(Cell cell) {
-        return new Cell((cell.x+1)*cellSize-gridLineThickness-1, (cell.y+1)*cellSize-gridLineThickness-1);
+        return new Cell((cell.x+1)*cellSize-1, (cell.y+1)*cellSize-1);
     }
 
     public Cell pixelToCell(int x, int y) {
