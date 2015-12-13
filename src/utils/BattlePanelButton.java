@@ -22,6 +22,11 @@ public class BattlePanelButton extends JButton implements MouseListener {
     static private float textYStartPressed = 0.675F;
     static private int fontSize = 20;
 
+    private BufferedImage btnDefault;
+    private BufferedImage btnPressed;
+    private BufferedImage btnHover;
+    private BufferedImage btnDisabled;
+
     private ArrayList<ActionListener> listeners = new ArrayList<>();
     private String text;
     private BufferedImage image;
@@ -31,9 +36,17 @@ public class BattlePanelButton extends JButton implements MouseListener {
     public BattlePanelButton(String text) {
         this.text = text;
         try {
-            image = ImageIO.read(new File("Assets/Buttons/BattlePanelButton_Default.png"));
+            btnDefault = ImageIO.read(new File("Assets/Buttons/BattlePanelButton_Default.png"));
+            btnPressed = ImageIO.read(new File("Assets/Buttons/BattlePanelButton_Pressed.png"));
+            btnHover = ImageIO.read(new File("Assets/Buttons/BattlePanelButton_Hover.png"));
+            btnDisabled = ImageIO.read(new File("Assets/Buttons/BattlePanelButton_Disabled.png"));
         } catch (IOException e) {
             e.printStackTrace();
+        }
+        if(isEnabled()) {
+            this.image = btnDefault;
+        } else {
+            this.image = btnDisabled;
         }
         this.setBorder(BorderFactory.createEmptyBorder());
         this.setContentAreaFilled(false);
@@ -44,8 +57,18 @@ public class BattlePanelButton extends JButton implements MouseListener {
     }
 
     @Override
+    public void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
+        if(enabled) {
+            this.image = btnDefault;
+        } else {
+            this.image = btnDisabled;
+        }
+        repaint();
+    }
+
+    @Override
     protected void paintComponent(Graphics g) {
-        //super.paintComponent(g);
         System.out.println("Painting button");
         g.drawImage(image,
                     0, 0, this.getWidth(), this.getHeight(),
@@ -67,51 +90,54 @@ public class BattlePanelButton extends JButton implements MouseListener {
 
     @Override
     public void mousePressed(MouseEvent e) {
-        try {
-            image = ImageIO.read(new File("Assets/Buttons/BattlePanelButton_Pressed.png"));
-        } catch (IOException ex) {
-            ex.printStackTrace();
+        if(isEnabled()) {
+            this.textXStart = textXStartPressed;
+            this.textYStart = textYStartPressed;
+            image = btnPressed;
+        } else {
+            image = btnDisabled;
         }
-        this.textXStart = textXStartPressed;
-        this.textYStart = textYStartPressed;
+
         repaint();
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        try {
-            image = ImageIO.read(new File("Assets/Buttons/BattlePanelButton_Hover.png"));
-        } catch (IOException ex) {
-            ex.printStackTrace();
+        if(isEnabled()) {
+            this.textXStart = textXStartUnpressed;
+            this.textYStart = textYStartUnpressed;
+            image = btnHover;
+            notifyListeners(e);
+        } else {
+            image = btnDisabled;
         }
-        this.textXStart = textXStartUnpressed;
-        this.textYStart = textYStartUnpressed;
-        notifyListeners(e);
+
         repaint();
     }
 
     @Override
     public void mouseEntered(MouseEvent e) {
-        System.out.println("mouse entered");
-        try {
-            image = ImageIO.read(new File("Assets/Buttons/BattlePanelButton_Hover.png"));
-        } catch (IOException ex) {
-            ex.printStackTrace();
+        if(isEnabled()) {
+            this.textXStart = textXStartUnpressed;
+            this.textYStart = textYStartUnpressed;
+            image = btnHover;
+        } else {
+            image = btnDisabled;
         }
-        this.textXStart = textXStartUnpressed;
-        this.textYStart = textYStartUnpressed;
+
         repaint();
     }
 
     @Override
     public void mouseExited(MouseEvent e) {
-        try {
-            image = ImageIO.read(new File("Assets/Buttons/BattlePanelButton_Default.png"));
-        } catch (IOException ex) {
-            ex.printStackTrace();
+        if(isEnabled()) {
+            this.textXStart = textXStartUnpressed;
+            this.textYStart = textYStartUnpressed;
+            image = btnDefault;
+        } else {
+            image = btnDisabled;
         }
-        this.textXStart = textXStartUnpressed;
-        this.textYStart = textYStartUnpressed;
+
         repaint();
     }
 
