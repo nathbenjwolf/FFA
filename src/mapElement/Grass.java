@@ -7,7 +7,7 @@ import character.Character;
  */
 public class Grass extends MapElement {
     public Grass(){
-        imageFilename = "Assets/MapElements/grass.bmp";
+        imageFilename = "Assets/MapElements/grass.png";
     }
 
     @Override

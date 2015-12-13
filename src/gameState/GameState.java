@@ -4,6 +4,7 @@ import battle.Battle;
 import battle.BattlePanel;
 import battle.Board;
 import battle.Cell;
+import utils.BattlePanelButton;
 
 import javax.swing.*;
 import java.awt.event.ActionListener;
@@ -33,9 +34,9 @@ public abstract class GameState implements ActionListener {
     public abstract void onBoardClicked(Cell cell);
 
     protected void addButtons(List<String> buttonNames, boolean hasBackButton) {
-        List<JButton> buttons = new ArrayList<JButton>();
+        List<JButton> buttons = new ArrayList<>();
         for(String buttonName : buttonNames) {
-            JButton button = new JButton(buttonName);
+            JButton button = new BattlePanelButton(buttonName);
             button.addActionListener(this);
             buttons.add(button);
         }
@@ -43,7 +44,7 @@ public abstract class GameState implements ActionListener {
         // Back button
         JButton backButton = null;
         if(hasBackButton) {
-            backButton = new JButton(backStringName);
+            backButton = new BattlePanelButton(backStringName);
             backButton.addActionListener(this);
         }
 

@@ -4,6 +4,7 @@ import battle.Battle;
 import battle.BattlePanel;
 import battle.Board;
 import battle.Cell;
+import utils.BattlePanelButton;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -27,17 +28,17 @@ public class MenuState extends GameState {
     protected void onInit() {
         List<JButton> buttons = new ArrayList<>();
 
-        JButton actionButton = new JButton(actionStringName);
+        JButton actionButton = new BattlePanelButton(actionStringName);
         actionButton.addActionListener(this);
         actionButton.setEnabled(!battle.hasActioned);
         buttons.add(actionButton);
 
-        JButton moveButton = new JButton(moveStringName);
+        JButton moveButton = new BattlePanelButton(moveStringName);
         moveButton.addActionListener(this);
         moveButton.setEnabled(!battle.hasMoved);
         buttons.add(moveButton);
 
-        JButton endTurnButton = new JButton(endTurnStringName);
+        JButton endTurnButton = new BattlePanelButton(endTurnStringName);
         endTurnButton.addActionListener(this);
         buttons.add(endTurnButton);
 

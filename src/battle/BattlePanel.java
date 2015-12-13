@@ -1,7 +1,11 @@
 package battle;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -9,10 +13,23 @@ import java.util.List;
  */
 public class BattlePanel extends JPanel {
     static int panelHeight = 100;
+    static private String backgroundFile = "Assets/Misc/BattlePanelBackground.png";
+    static BufferedImage img;
+    static BufferedImage subImg;
+
+    public BattlePanel() {
+        try {
+            img = ImageIO.read(new File(backgroundFile));
+        } catch (IOException e) {
+            System.err.println("BattlePanel: Error reading file: " + backgroundFile);
+        }
+    }
 
     public void paintComponent(Graphics g) {
-        g.setColor(Color.BLUE);
-        g.fillRect(0, 0, this.getWidth(),this.getHeight());
+        if(subImg == null) {
+            subImg = img.getSubimage(0, 0, this.getWidth(), this.getHeight());
+        }
+        g.drawImage(subImg, 0, 0, this.getWidth(), this.getHeight(), null);
     }
 
     public void updateBattlePanel(List<JButton> buttons, JButton backButton) {
