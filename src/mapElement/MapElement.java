@@ -13,7 +13,7 @@ import character.Character;
 public abstract class MapElement {
     protected String imageFilename;
 
-    public BufferedImage getImage() {
+    public BufferedImage getImage(int tick) {
         BufferedImage img = null;
         try {
             img = ImageIO.read(new File(imageFilename));

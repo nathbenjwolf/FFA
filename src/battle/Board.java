@@ -1,7 +1,10 @@
 package battle;
 
 import javax.swing.*;
+import javax.swing.Timer;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.util.*;
 import java.util.List;
@@ -17,13 +20,15 @@ import utils.PathFinding;
 /**
  * Created by Nathan on 11/14/2015.
  */
-public class Board extends JPanel {
+public class Board extends JPanel implements ActionListener {
     static int cellSize = 80;
     static int gridLineThickness = 4;
-    static int realCellSize = cellSize - (gridLineThickness);
+    public static int realCellSize = cellSize - (gridLineThickness);
     static int healthBarPadding = (int) ((double)Board.realCellSize * 0.05);
     static int healthBarWidth = (int) ((double)Board.realCellSize * 0.7);
     static int healthBarHeight = (int) ((double)Board.realCellSize * 0.1);
+    static int animationTimerDelay = 100;
+    public static int animationTotalTicks = 1000;
 
     int numXCells;
     int numYCells;
@@ -37,6 +42,9 @@ public class Board extends JPanel {
     private List<Character> team2;
     private List<Character> allCharacters;
     private Map<Character, Cell> characterLocations = new HashMap<>();
+
+    private Timer animationTimer;
+    private int animationTick;
 
     public Board(List<Character> team1, List<Character> team2, String map) {
         this.team1 = team1;
@@ -60,6 +68,12 @@ public class Board extends JPanel {
             team2.get(i).cell = new Cell(numXCells-1,i+3);
             team2.get(i).direction = Direction.LEFT;
         }
+
+        // Setup animation timer
+        animationTick = 0;
+        animationTimer = new Timer(animationTimerDelay, this);
+        animationTimer.setInitialDelay(animationTimerDelay);
+        animationTimer.start();
     }
 
     public void paintComponent(Graphics g) {
@@ -76,7 +90,7 @@ public class Board extends JPanel {
             for(int y=0; y<map[0].length; y++) {
                 Cell TLPixel = cellToTLRealPixel(new Cell(x,y));
                 Cell BRPixel = cellToBRRealPixel(new Cell(x,y));
-                BufferedImage img = map[x][y].getImage();
+                BufferedImage img = map[x][y].getImage(animationTick);
 
                 g.drawImage(img,
                         TLPixel.x, TLPixel.y, BRPixel.x+1, BRPixel.y+1, // Extra +1 because drawImage -1
@@ -180,6 +194,17 @@ public class Board extends JPanel {
         g.fillRect(topLeftPixel.x, topLeftPixel.y, gridLineThickness, cellSize);
         g.fillRect(topLeftPixel.x, topLeftPixel.y+cellSize-gridLineThickness, cellSize, gridLineThickness);
         g.fillRect(topLeftPixel.x+cellSize-gridLineThickness, topLeftPixel.y, gridLineThickness, cellSize);
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if(animationTick+1 >= animationTotalTicks) {
+            animationTick = 0;
+        } else {
+            animationTick++;
+        }
+
+        repaint();
     }
 
     public void showMoveCells(Character character) {
@@ -342,4 +367,5 @@ public class Board extends JPanel {
     public Cell pixelToCell(int x, int y) {
         return new Cell(x/cellSize, y/cellSize);
     }
+
 }
