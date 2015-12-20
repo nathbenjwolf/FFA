@@ -2,6 +2,7 @@ package ability;
 
 import battle.Cell;
 import character.Character;
+import mapElement.MapCell;
 import mapElement.MapElement;
 import utils.PathFinding;
 
@@ -16,7 +17,7 @@ public abstract class EnemyTargetAbility extends Ability {
     }
 
     @Override
-    public void useAbility(MapElement[][] map, List<Character> team, List<Character> enemyTeam, Character sourceCharacter, Cell targetCell) {
+    public void useAbility(MapCell[][] map, List<Character> team, List<Character> enemyTeam, Character sourceCharacter, Cell targetCell) {
         for(Character enemy : enemyTeam) {
             if(enemy.cell.equals(targetCell)) {
                 applyAbility(sourceCharacter, enemy);
@@ -26,7 +27,7 @@ public abstract class EnemyTargetAbility extends Ability {
 
 
     @Override
-    public List<Set<Cell>> getAttackCells(MapElement[][] map, List<Character> team, List<Character> enemyTeam, Character sourceCharacter) {
+    public List<Set<Cell>> getAttackCells(MapCell[][] map, List<Character> team, List<Character> enemyTeam, Character sourceCharacter) {
         List<Set<Cell>> abilityCells = new ArrayList<>();
         Set<Cell> rangeCells = PathFinding.findRadialCells(map, sourceCharacter.cell, range);
         Set<Cell> attackCells = new HashSet<>();

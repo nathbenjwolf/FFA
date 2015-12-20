@@ -29,11 +29,11 @@ public class Battle extends JFrame implements MouseListener{
     public boolean hasActioned = false;
     public boolean hasMoved = false;
 
-    public Battle(List<Character> team1, List<Character> team2, String map) {
+    public Battle(List<Character> team1, List<Character> team2, String groundMap, String objectsMap) {
         this.team1 = team1;
         this.team2 = team2;
 
-        board = new Board(team1, team2, map);
+        board = new Board(team1, team2, groundMap, objectsMap);
         board.addMouseListener(this);
 
         battlePanel = new BattlePanel();
@@ -138,7 +138,7 @@ public class Battle extends JFrame implements MouseListener{
         team2.add(new Wizard(5,2));
         team2.add(new Priest(6,3));
 
-        Battle ex = new Battle(team1, team2, "Assets/Maps/battle2.png");
+        Battle ex = new Battle(team1, team2, "Assets/Maps/battle1ground.png", "Assets/Maps/battle1objects.png");
     }
 
 }

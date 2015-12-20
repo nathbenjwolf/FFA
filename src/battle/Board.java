@@ -12,6 +12,7 @@ import java.util.Set;
 
 import ability.Ability;
 import character.Character;
+import mapElement.MapCell;
 import mapElement.MapElement;
 import utils.Orientation;
 import utils.Orientation.Direction;
@@ -23,6 +24,7 @@ import utils.PathFinding;
 public class Board extends JPanel implements ActionListener {
     public static int cellSize = 80;
     static int gridLineThickness = 2;
+    static int cellThickness = cellSize / 3;
     static int realCellSize = cellSize - gridLineThickness;
     static int healthBarPadding = (int) ((double)Board.realCellSize * 0.05);
     static int healthBarWidth = (int) ((double)Board.realCellSize * 0.7);
@@ -33,7 +35,7 @@ public class Board extends JPanel implements ActionListener {
 
     int numXCells;
     int numYCells;
-    MapElement[][] map;
+    MapCell[][] map;
     Set<Cell> moveCells = new HashSet<>();
     Set<Cell> abilityTargetCells = new HashSet<>();
     Set<Cell> abilityRangeCells = new HashSet<>();
@@ -47,13 +49,13 @@ public class Board extends JPanel implements ActionListener {
     private Timer animationTimer;
     private int animationTick;
 
-    public Board(List<Character> team1, List<Character> team2, String map) {
+    public Board(List<Character> team1, List<Character> team2, String groundMap, String objectMap) {
         this.team1 = team1;
         this.team2 = team2;
         this.allCharacters = new ArrayList<>();
         this.allCharacters.addAll(team1);
         this.allCharacters.addAll(team2);
-        this.map = MapParser.decodeMap(map);
+        this.map = MapParser.decodeMap(groundMap, objectMap);
         this.numXCells = this.map.length;
         this.numYCells = this.map[0].length;
 
@@ -78,26 +80,31 @@ public class Board extends JPanel implements ActionListener {
     }
 
     public void paintComponent(Graphics g) {
-        drawMap(g);
-        drawCharacters(g, allCharacters);
+        drawGround(g);
         drawGrid(g);
-        drawMoveCells(g);
-        drawAbilityCells(g);
-        drawOrientationCells(g);
+        drawCellIndicators(g);
+        drawObjects(g);
     }
 
-    private void drawMap(Graphics g) {
+    private void drawGround(Graphics g) {
         for(int x=0; x<map.length; x++) {
             for(int y=0; y<map[0].length; y++) {
-                Cell TLPixel = cellToTLRealPixel(new Cell(x,y));
-                Cell BRPixel = cellToBRRealPixel(new Cell(x,y));
-                BufferedImage img = map[x][y].getImage(animationTick);
-
-                g.drawImage(img,
-                        TLPixel.x, TLPixel.y, BRPixel.x+1, BRPixel.y+1, // Extra +1 because drawImage -1
-                        0, 0, img.getWidth(), img.getHeight(),
-                        null);
+                Cell cell = new Cell(x,y);
+                drawGroundCell(g, cell);
             }
+        }
+    }
+
+    private void drawGroundCell(Graphics g, Cell cell) {
+        Cell TLPixel = cellToTLRealPixel(cell);
+        Cell BRPixel = cellToBRRealPixel(cell);
+        if(map[cell.x][cell.y].isPresent() && map[cell.x][cell.y].ground != null) {
+            BufferedImage img = map[cell.x][cell.y].ground.getImage(animationTick);
+
+            g.drawImage(img,
+                    TLPixel.x, TLPixel.y, BRPixel.x + 1, BRPixel.y + 1, // Extra +1 because drawImage -1
+                    0, 0, img.getWidth(), img.getHeight(),
+                    null);
         }
     }
 
@@ -122,6 +129,12 @@ public class Board extends JPanel implements ActionListener {
         }
         topLeftPixel = cellToTLPixel(new Cell(0,numYCells));
         g.fillRect(0, topLeftPixel.y-gridLineThickness, getWidth(), gridLineThickness);
+    }
+
+    private void drawCellIndicators(Graphics g) {
+        drawMoveCells(g);
+        drawAbilityCells(g);
+        drawOrientationCells(g);
     }
 
     private void drawMoveCells(Graphics g) {
@@ -154,10 +167,73 @@ public class Board extends JPanel implements ActionListener {
         }
     }
 
+    private void drawObjects(Graphics g) {
+        for(int x=0; x<map.length; x++) {
+            for(int y=0; y<map[0].length; y++) {
+                Cell cell = new Cell(x,y);
+                Cell TLPixel = cellToTLRealPixel(cell);
+                // TEMPORARY
+                TLPixel.y -= (cellSize/3);
+                Cell BRPixel = cellToBRRealPixel(cell);
+                // TEMPORARY
+                BRPixel.y -= (cellSize/3);
+
+                // Draw Cell Object
+                drawObjectCell(g, cell);
+
+                // Draw Character
+                drawCellCharacter(g, cell);
+            }
+        }
+    }
+
+    private void drawObjectCell(Graphics g, Cell cell) {
+        if(map[cell.x][cell.y].isPresent()) {
+            Cell TLPixel = cellToTLRealPixel(cell);
+            // TEMPORARY
+            TLPixel.y -= (cellSize/2);
+            Cell BRPixel = cellToBRRealPixel(cell);
+            // TEMPORARY
+            BRPixel.y -= (cellSize/4);
+            if(map[cell.x][cell.y].isPresent() && map[cell.x][cell.y].object != null) {
+                BufferedImage img = map[cell.x][cell.y].object.getImage(animationTick);
+
+                g.drawImage(img,
+                        TLPixel.x, TLPixel.y, BRPixel.x + 1, BRPixel.y + 1, // Extra +1 because drawImage -1
+                        0, 0, img.getWidth(), img.getHeight(),
+                        null);
+            }
+        }
+    }
+
+    private void drawCellCharacter(Graphics g, Cell cell) {
+        Cell TLPixel = cellToTLRealPixel(cell);
+        // TEMPORARY
+        TLPixel.y -= (cellSize/3);
+        Cell BRPixel = cellToBRRealPixel(cell);
+        // TEMPORARY
+        BRPixel.y -= (cellSize/3);
+
+        for(Character character: allCharacters) {
+            if(character.cell.equals(cell)) {
+                BufferedImage img = character.getImage();
+
+                g.drawImage(img,
+                        TLPixel.x, TLPixel.y, BRPixel.x + 1, BRPixel.y + 1, // Extra +1 because drawImage -1
+                        0, 0, img.getWidth(), img.getHeight(),
+                        null);
+            }
+        }
+    }
+
     private void drawCharacters(Graphics g, List<Character> characters) {
         for(Character character : characters) {
             Cell TLPixel = cellToTLRealPixel(character.cell);
+            // TEMPORARY
+            TLPixel.y -= (cellSize/3);
             Cell BRPixel = cellToBRRealPixel(character.cell);
+            // TEMPORARY
+            BRPixel.y -= (cellSize/3);
             // Character image
             BufferedImage img = character.getImage();
 
@@ -167,13 +243,14 @@ public class Board extends JPanel implements ActionListener {
                     null);
 
             // Health bar
-            drawHealthBar(g, character);
+            //drawHealthBar(g, character);
         }
     }
 
     private void drawHealthBar(Graphics g, Character character) {
         Cell TLPixel = cellToTLRealPixel(character.cell);
         TLPixel.x += healthBarPadding;
+        TLPixel.y -= (cellSize/3);
         TLPixel.y += healthBarPadding;
 
         // Health bar border
@@ -203,7 +280,7 @@ public class Board extends JPanel implements ActionListener {
 
     private float getPulseFrame() {
         // Pulse between 50% and 100%
-        return (((float)animationTick%10)+10)/20;
+        return (((float)animationTick%tilePulseFrames)+tilePulseFrames)/(tilePulseFrames*2);
     }
 
     @Override

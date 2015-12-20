@@ -2,6 +2,7 @@ package character;
 
 import ability.PriestAttackAbility;
 import battle.Cell;
+import mapElement.MapCell;
 import mapElement.MapElement;
 import utils.PathFinding;
 
@@ -21,7 +22,7 @@ public class Priest extends Character {
     }
 
     @Override
-    public Set<Cell> getMovementCells(MapElement[][] map, List<Character> team, List<Character> enemyTeam) {
+    public Set<Cell> getMovementCells(MapCell[][] map, List<Character> team, List<Character> enemyTeam) {
         Set<Cell> movementCells = PathFinding.findPathableRadialCells(map, this, cell, this.moveRange);
         // Remove team locations as possible movement cells
         for(Character character: team) {

@@ -1,6 +1,7 @@
 package utils;
 
 import battle.Cell;
+import mapElement.MapCell;
 import mapElement.MapElement;
 import character.Character;
 
@@ -12,19 +13,19 @@ import java.util.Set;
  */
 public abstract class PathFinding {
 
-    public static Set<Cell> findPathableCells(MapElement[][] map, Set<Cell> blockingCells, Character character, Cell cell, int range) {
+    public static Set<Cell> findPathableCells(MapCell[][] map, Set<Cell> blockingCells, Character character, Cell cell, int range) {
         return findPathableCellsRec(map, blockingCells, character, new Cell(cell), range);
     }
 
-    public static Set<Cell> findProjectileCells(MapElement[][] map, Set<Cell> blockingCells, Cell cell, int range) {
+    public static Set<Cell> findProjectileCells(MapCell[][] map, Set<Cell> blockingCells, Cell cell, int range) {
         return new HashSet<Cell>(); // Implement
     }
 
-    public static Set<Cell> findRadialCells(MapElement[][] map, Cell cell, int radius) {
+    public static Set<Cell> findRadialCells(MapCell[][] map, Cell cell, int radius) {
         return findRadialCellsRec(map, new Cell(cell), radius);
     }
 
-    public static Set<Cell> findPathableRadialCells(MapElement[][] map, Character character, Cell cell, int radius) {
+    public static Set<Cell> findPathableRadialCells(MapCell[][] map, Character character, Cell cell, int radius) {
         Set<Cell> radialCells = findRadialCellsRec(map, new Cell(cell), radius);
         Set<Cell> blockedCells = new HashSet<>();
         for(Cell radialCell: radialCells) {
@@ -36,7 +37,7 @@ public abstract class PathFinding {
         return radialCells;
     }
 
-    private static Set<Cell> findPathableCellsRec(MapElement[][] map, Set<Cell> blockingCells, Character character, Cell cell, int range) {
+    private static Set<Cell> findPathableCellsRec(MapCell[][] map, Set<Cell> blockingCells, Character character, Cell cell, int range) {
         Set<Cell> cells = new HashSet<Cell>();
         cells.add(new Cell(cell));
 
@@ -77,7 +78,7 @@ public abstract class PathFinding {
         return cells;
     }
 
-    private static Set<Cell> findRadialCellsRec(MapElement[][] map, Cell cell, int radius) {
+    private static Set<Cell> findRadialCellsRec(MapCell[][] map, Cell cell, int radius) {
         Set<Cell> cells = new HashSet<Cell>();
         cells.add(new Cell(cell));
 

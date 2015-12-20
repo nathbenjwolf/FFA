@@ -2,6 +2,7 @@ package ability;
 
 import battle.Cell;
 import character.Character;
+import mapElement.MapCell;
 import mapElement.MapElement;
 
 import java.util.List;
@@ -21,7 +22,7 @@ public abstract class Ability {
         this.range = range;
     }
 
-    public abstract void useAbility(MapElement[][] map, List<Character> team, List<Character> enemyTeam, Character sourceCharacter, Cell targetCell);
+    public abstract void useAbility(MapCell[][] map, List<Character> team, List<Character> enemyTeam, Character sourceCharacter, Cell targetCell);
 
     protected void applyAbility(Character sourceCharacter, List<Character> targetCharacters) {
         for(Character targetCharacter : targetCharacters) {
@@ -33,5 +34,5 @@ public abstract class Ability {
         targetCharacter.takeDamage(sourceCharacter, damage);
     }
 
-    public abstract List<Set<Cell>> getAttackCells(MapElement[][] map, List<Character> team, List<Character> enemyTeam, Character sourceCharacter);
+    public abstract List<Set<Cell>> getAttackCells(MapCell[][] map, List<Character> team, List<Character> enemyTeam, Character sourceCharacter);
 }

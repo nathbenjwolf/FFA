@@ -13,7 +13,7 @@ import java.io.IOException;
 /**
  * Created by Nathan on 11/16/2015.
  */
-public class Water extends MapElement {
+public class Water extends GroundElement {
     public Water() {
         imageFilename = "Assets/MapElements/water.png";
     }

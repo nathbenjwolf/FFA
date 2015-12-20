@@ -2,6 +2,7 @@ package character;
 
 import ability.Ability;
 import battle.Cell;
+import mapElement.MapCell;
 import mapElement.MapElement;
 import utils.Globals;
 import utils.Orientation;
@@ -91,7 +92,7 @@ public abstract class Character {
     }
     public boolean isDead() { return this.currentHealth <= 0; }
 
-    public Set<Cell> getMovementCells(MapElement[][] map, List<Character> team, List<Character> enemyTeam) {
+    public Set<Cell> getMovementCells(MapCell[][] map, List<Character> team, List<Character> enemyTeam) {
         // Enemy team is movement blocking
         Set<Cell> blockingCells = new HashSet<>();
         for(Character character : enemyTeam) {

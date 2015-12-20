@@ -5,9 +5,9 @@ import character.Character;
 /**
  * Created by Nathan on 11/16/2015.
  */
-public class Tree extends MapElement {
+public class Tree extends ObjectElement {
     public Tree() {
-        imageFilename = "Assets/MapElements/tree.bmp";
+        imageFilename = "Assets/MapElements/tree.png";
     }
 
     @Override
