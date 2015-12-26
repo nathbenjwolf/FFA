@@ -19,28 +19,23 @@ public class Water extends GroundElement {
     }
 
     @Override
-    public BufferedImage getImage(int tick) {
-        BufferedImage img = null;
-        try {
-            img = ImageIO.read(new File(imageFilename));
-            int numFrames = img.getWidth();
-            int xPixel = (int) (tick % numFrames);
-            if(xPixel + Board.cellSize > numFrames) {
-                // Merge the images from either end to make the animation seem infinite.
-                BufferedImage img1 = img.getSubimage(xPixel, 0, numFrames-xPixel, Board.cellSize);
-                BufferedImage img2 = img.getSubimage(0, 0, Board.cellSize-(numFrames-xPixel), Board.cellSize);
-                img = new BufferedImage(Board.cellSize, Board.cellSize, img.getType());
-                img.createGraphics().drawImage(img1, 0, 0, null);
-                img.createGraphics().drawImage(img2, numFrames-xPixel, 0, null);
-            } else {
-                img = img.getSubimage(xPixel, 0, Board.cellSize, Board.cellSize);
-            }
-
-        } catch (IOException e) {
-            System.err.println("MapElement.getImage(): Error reading file: " + imageFilename);
+    protected BufferedImage modifyImage(BufferedImage img, int tick) {
+        BufferedImage finalImg;
+        int numFrames = img.getWidth();
+        int xPixel = (int) (tick % numFrames);
+        if(xPixel + Board.cellSize > numFrames) {
+            // Merge the images from either end to make the animation seem infinite
+            int remainingXPixels = numFrames-xPixel;
+            BufferedImage img1 = img.getSubimage(xPixel, 0, remainingXPixels, Board.cellSize);
+            BufferedImage img2 = img.getSubimage(0, 0, Board.cellSize-remainingXPixels, Board.cellSize);
+            finalImg = new BufferedImage(Board.cellSize, Board.cellSize, img.getType());
+            finalImg.createGraphics().drawImage(img1, 0, 0, null);
+            finalImg.createGraphics().drawImage(img2, remainingXPixels, 0, null);
+        } else {
+            finalImg = img.getSubimage(xPixel, 0, Board.cellSize, Board.cellSize);
         }
 
-        return img;
+        return finalImg;
     }
 
     @Override
