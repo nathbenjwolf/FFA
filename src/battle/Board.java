@@ -22,6 +22,8 @@ import utils.PathFinding;
  * Created by Nathan on 11/14/2015.
  */
 public class Board extends JPanel implements ActionListener {
+
+    // Size constants
     public static int cellSize = 80;
     static int gridLineThickness = 2;
     public static int cellThickness = cellSize / 3;
@@ -29,9 +31,29 @@ public class Board extends JPanel implements ActionListener {
     static int healthBarPadding = (int) ((double)Board.realCellSize * 0.05);
     static int healthBarWidth = (int) ((double)Board.realCellSize * 0.7);
     static int healthBarHeight = (int) ((double)Board.realCellSize * 0.1);
+
+    // Animation timer constants
     static int animationTimerDelay = 100;
     public static int animationTotalTicks = 1000;
     static int tilePulseFrames = 10;
+
+    // Shading Constants
+    static float tileThicknessAlpha = 0.5F;
+    static float gridLineAlpha = 0.3F;
+
+    // Move Cell Constants
+    static Color moveCellColorFill = new Color(1F, 0.55F, 0F, 0.5F);
+    static Color moveCellColorBorder = new Color(1F, 0.55F, 0F, 1F);
+
+    // Ability Cell Constants
+    static Color abilityRangeCellColorFill = new Color(1F, 0.55F, 0.0F, 0.3F);
+    static Color abilityRangeCellColorBorder = new Color(1F, 0.55F, 0.0F, 1F);
+    static Color abilityTargetCellColorFill = new Color(0.0F, 0.25F, 0.25F, 0.5F);
+    static Color abilityTargetCellColorBorder = new Color(0.0F, 0.25F, 0.25F, 1F);
+
+    // Orientation Cell Constants
+    static Color orientationCellColorFill = new Color(0.0F, 0.0F, 0.1F, 0.5F);
+    static Color orientationCellColorBorder = new Color(0.0F, 0.0F, 0.1F, 1F);
 
     int numXCells;
     int numYCells;
@@ -96,8 +118,8 @@ public class Board extends JPanel implements ActionListener {
     }
 
     private void drawGroundCell(Graphics g, Cell cell) {
-        Cell TLPixel = cellToTLRealPixel(cell);
-        Cell BRPixel = cellToBRRealPixel(cell);
+        Cell TLPixel = cellToTLPixel(cell);
+        Cell BRPixel = cellToBRPixel(cell);
         if(map[cell.x][cell.y].isPresent() && map[cell.x][cell.y].ground != null) {
             BufferedImage img = map[cell.x][cell.y].ground.getImage(animationTick);
 
@@ -120,13 +142,13 @@ public class Board extends JPanel implements ActionListener {
                 null);
 
         // Make thickness darker to appear as a shadow
-        g.setColor(new Color(0, 0, 0, 0.5F));
+        g.setColor(new Color(0, 0, 0, tileThicknessAlpha));
 
         g.fillRect(TLPixel.x, TLPixel.y, cellSize, cellThickness);
     }
 
     private void drawGrid(Graphics g) {
-        g.setColor(new Color(0, 0, 0, 0.3F));
+        g.setColor(new Color(0, 0, 0, gridLineAlpha));
         Cell topLeftPixel;
 
         // Vertical lines
@@ -159,39 +181,52 @@ public class Board extends JPanel implements ActionListener {
             return;
         }
 
+        Color fillColor = getPulseColor(moveCellColorFill);
+        Color borderColor = getPulseColor(moveCellColorBorder);
         for(Cell cell: moveCells) {
-            drawCell(g, cell, new Color(1F, 0.55F, 0F, getPulseFrame()*0.5F));
-            drawCellBorder(g, cell, new Color(1F, 0.55F, 0F, getPulseFrame()*1F));
+            drawCell(g, cell, fillColor);
+            drawCellBorder(g, cell, borderColor);
         }
     }
 
     private void drawAbilityCells(Graphics g) {
         for(Cell cell: abilityRangeCells) {
-            drawCell(g, cell, new Color(1F, 0.55F, 0.0F, 0.3F));
-            drawCellBorder(g, cell, new Color(1F, 0.55F, 0.0F, 1F));
+            drawCell(g, cell, abilityRangeCellColorFill);
+            drawCellBorder(g, cell, abilityRangeCellColorBorder);
         }
 
+        Color fillColor = getPulseColor(abilityTargetCellColorFill);
+        Color borderColor = getPulseColor(abilityTargetCellColorBorder);
         for(Cell cell: abilityTargetCells) {
-            drawCell(g, cell, new Color(0.0F, 0.25F, 0.25F, getPulseFrame()*0.5F));
-            drawCellBorder(g, cell, new Color(0.0F, 0.25F, 0.25F, getPulseFrame()*1F));
+            drawCell(g, cell, fillColor);
+            drawCellBorder(g, cell, borderColor);
         }
     }
 
     private void drawOrientationCells(Graphics g) {
+        Color fillColor = getPulseColor(orientationCellColorFill);
+        Color borderColor = getPulseColor(orientationCellColorBorder);
         for(Cell cell: orientationCells) {
-            drawCell(g, cell, new Color(0.0F, 0.0F, 0.1F, getPulseFrame()*0.5F));
-            drawCellBorder(g, cell, new Color(0.0F, 0.0F, 0.1F, getPulseFrame()*1F));
+            drawCell(g, cell, fillColor);
+            drawCellBorder(g, cell, borderColor);
         }
+    }
+
+    private Color getPulseColor(Color color) {
+        return new Color((float)color.getRed()/255F,
+                         (float)color.getGreen()/255F,
+                         (float)color.getBlue()/255F,
+                         ((float)color.getAlpha()/255F)*getPulseFrame());
     }
 
     private void drawObjects(Graphics g) {
         for(int x=0; x<map.length; x++) {
             for(int y=0; y<map[0].length; y++) {
                 Cell cell = new Cell(x,y);
-                Cell TLPixel = cellToTLRealPixel(cell);
+                Cell TLPixel = cellToTLPixel(cell);
                 // TEMPORARY
                 TLPixel.y -= (cellSize/3);
-                Cell BRPixel = cellToBRRealPixel(cell);
+                Cell BRPixel = cellToBRPixel(cell);
                 // TEMPORARY
                 BRPixel.y -= (cellSize/3);
 
@@ -206,10 +241,10 @@ public class Board extends JPanel implements ActionListener {
 
     private void drawObjectCell(Graphics g, Cell cell) {
         if(map[cell.x][cell.y].isPresent()) {
-            Cell TLPixel = cellToTLRealPixel(cell);
+            Cell TLPixel = cellToTLPixel(cell);
             // TEMPORARY
             TLPixel.y -= (cellSize/2);
-            Cell BRPixel = cellToBRRealPixel(cell);
+            Cell BRPixel = cellToBRPixel(cell);
             // TEMPORARY
             BRPixel.y -= (cellSize/4);
             if(map[cell.x][cell.y].isPresent() && map[cell.x][cell.y].object != null) {
@@ -224,10 +259,10 @@ public class Board extends JPanel implements ActionListener {
     }
 
     private void drawCellCharacter(Graphics g, Cell cell) {
-        Cell TLPixel = cellToTLRealPixel(cell);
+        Cell TLPixel = cellToTLPixel(cell);
         // TEMPORARY
         TLPixel.y -= (cellSize/3);
-        Cell BRPixel = cellToBRRealPixel(cell);
+        Cell BRPixel = cellToBRPixel(cell);
         // TEMPORARY
         BRPixel.y -= (cellSize/3);
 
@@ -245,10 +280,10 @@ public class Board extends JPanel implements ActionListener {
 
     private void drawCharacters(Graphics g, List<Character> characters) {
         for(Character character : characters) {
-            Cell TLPixel = cellToTLRealPixel(character.cell);
+            Cell TLPixel = cellToTLPixel(character.cell);
             // TEMPORARY
             TLPixel.y -= (cellSize/3);
-            Cell BRPixel = cellToBRRealPixel(character.cell);
+            Cell BRPixel = cellToBRPixel(character.cell);
             // TEMPORARY
             BRPixel.y -= (cellSize/3);
             // Character image
@@ -265,7 +300,7 @@ public class Board extends JPanel implements ActionListener {
     }
 
     private void drawHealthBar(Graphics g, Character character) {
-        Cell TLPixel = cellToTLRealPixel(character.cell);
+        Cell TLPixel = cellToTLPixel(character.cell);
         TLPixel.x += healthBarPadding;
         TLPixel.y -= (cellSize/3);
         TLPixel.y += healthBarPadding;
@@ -460,21 +495,13 @@ public class Board extends JPanel implements ActionListener {
         return new Cell((cell.x+1)*cellSize-1, (cell.y+1)*cellSize-1);
     }
 
-    public Cell cellToTLRealPixel(Cell cell) {
-        return new Cell(cell.x*cellSize, cell.y*cellSize);
-    }
-
-    public Cell cellToBRRealPixel(Cell cell) {
-        return new Cell((cell.x+1)*cellSize-1, (cell.y+1)*cellSize-1);
-    }
-
     public Cell cellToTLThicknessPixel(Cell cell) {
         cell = new Cell(cell.x, cell.y+1);
-        return cellToTLRealPixel(cell);
+        return cellToTLPixel(cell);
     }
 
     public Cell cellToBRThicknessPixel(Cell cell) {
-        Cell pixel = cellToBRRealPixel(cell);
+        Cell pixel = cellToBRPixel(cell);
         pixel.y += cellThickness;
         return pixel;
     }
