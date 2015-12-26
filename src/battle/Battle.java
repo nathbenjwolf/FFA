@@ -49,7 +49,7 @@ public class Battle extends JFrame implements MouseListener{
         //setSize(Board.cellSize*board.numXCells+(borderLen*2), Board.cellSize*board.numYCells+borderLen+topBorderLen+BattlePanel.panelHeight);
 
         // Board
-        board.setPreferredSize(new Dimension(Board.cellSize*board.numXCells, Board.cellSize*board.numYCells));
+        board.setPreferredSize(new Dimension(Board.cellSize*board.numXCells, (Board.cellSize*board.numYCells) + Board.cellThickness ));
         add(board, BorderLayout.NORTH);
 
         // BattlePanel

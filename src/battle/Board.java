@@ -24,7 +24,7 @@ import utils.PathFinding;
 public class Board extends JPanel implements ActionListener {
     public static int cellSize = 80;
     static int gridLineThickness = 2;
-    static int cellThickness = cellSize / 3;
+    public static int cellThickness = cellSize / 3;
     static int realCellSize = cellSize - gridLineThickness;
     static int healthBarPadding = (int) ((double)Board.realCellSize * 0.05);
     static int healthBarWidth = (int) ((double)Board.realCellSize * 0.7);
@@ -105,7 +105,24 @@ public class Board extends JPanel implements ActionListener {
                     TLPixel.x, TLPixel.y, BRPixel.x + 1, BRPixel.y + 1, // Extra +1 because drawImage -1
                     0, 0, img.getWidth(), img.getHeight(),
                     null);
+
+            drawGroundCellThickness(g, cell, img);
         }
+    }
+
+    private void drawGroundCellThickness(Graphics g, Cell cell, BufferedImage img) {
+        Cell TLPixel = cellToTLThicknessPixel(cell);
+        Cell BRPixel = cellToBRThicknessPixel(cell);
+
+        g.drawImage(img,
+                TLPixel.x, TLPixel.y, BRPixel.x + 1, BRPixel.y + 1, // Extra +1 because drawImage -1
+                0, 0, img.getWidth(), img.getHeight(),
+                null);
+
+        // Make thickness darker to appear as a shadow
+        g.setColor(new Color(0, 0, 0, 0.5F));
+
+        g.fillRect(TLPixel.x, TLPixel.y, cellSize, cellThickness);
     }
 
     private void drawGrid(Graphics g) {
@@ -449,6 +466,17 @@ public class Board extends JPanel implements ActionListener {
 
     public Cell cellToBRRealPixel(Cell cell) {
         return new Cell((cell.x+1)*cellSize-1, (cell.y+1)*cellSize-1);
+    }
+
+    public Cell cellToTLThicknessPixel(Cell cell) {
+        cell = new Cell(cell.x, cell.y+1);
+        return cellToTLRealPixel(cell);
+    }
+
+    public Cell cellToBRThicknessPixel(Cell cell) {
+        Cell pixel = cellToBRRealPixel(cell);
+        pixel.y += cellThickness;
+        return pixel;
     }
 
     public Cell pixelToCell(int x, int y) {

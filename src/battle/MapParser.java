@@ -17,11 +17,11 @@ import java.io.IOException;
  * Ground Types:
  * Green - (0, 255, 0 ) - grass
  * Blue - (0, 0, 255) - water
- * White - (0, 0, 0) - NONE
+ * White - (255, 255, 255) - NONE
  *
  * Object Types:
  * Brown - (185, 122, 87) - tree
- * White - (0, 0, 0) - NONE
+ * White - (255, 255, 255) - NONE
  */
 public final class MapParser {
     // Ground types:
@@ -32,7 +32,7 @@ public final class MapParser {
     private static final int tree = 0xB97A57;
 
     // Both:
-    private static final int NONE = 0x000000;
+    private static final int NONE = 0xFFFFFF;
 
     private MapParser() {}
 
