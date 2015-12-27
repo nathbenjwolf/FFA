@@ -33,21 +33,9 @@ public abstract class GameState implements ActionListener {
 
     public abstract void onBoardClicked(Cell cell);
 
-    protected void addButtons(List<String> buttonNames, boolean hasBackButton) {
-        List<JButton> buttons = new ArrayList<>();
-        for(String buttonName : buttonNames) {
-            JButton button = new BattlePanelButton(buttonName);
-            button.addActionListener(this);
-            buttons.add(button);
-        }
-
-        // Back button
-        JButton backButton = null;
-        if(hasBackButton) {
-            backButton = new BattlePanelButton(backStringName);
-            backButton.addActionListener(this);
-        }
-
-        battlePanel.updateBattlePanel(buttons, backButton);
+    protected JButton getBackButton() {
+        JButton backButton = new BattlePanelButton(backStringName);
+        backButton.addActionListener(this);
+        return backButton;
     }
 }

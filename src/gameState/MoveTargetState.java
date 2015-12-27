@@ -20,8 +20,7 @@ public class MoveTargetState extends GameState {
     @Override
     protected void onInit() {
         board.showMoveCells(battle.activeCharacter);
-        List<String> buttonNames = new ArrayList<>();
-        addButtons(buttonNames, true);
+        battlePanel.updateBattlePanel(null, getBackButton());
     }
 
     @Override

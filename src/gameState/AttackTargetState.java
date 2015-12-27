@@ -20,8 +20,7 @@ public class AttackTargetState extends GameState {
     @Override
     protected void onInit() {
         board.showAbilityCells(battle.activeCharacter, battle.activeCharacter.attack);
-        List<String> buttonNames = new ArrayList<>();
-        addButtons(buttonNames, true);
+        battlePanel.updateBattlePanel(null, getBackButton());
     }
 
     @Override

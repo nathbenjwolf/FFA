@@ -22,8 +22,7 @@ public class OrientationTargetState extends GameState {
     @Override
     protected void onInit() {
         board.showOrientationCells(battle.activeCharacter);
-        List<String> buttonNames = new ArrayList<>();
-        addButtons(buttonNames, true);
+        battlePanel.updateBattlePanel(null, getBackButton());
     }
 
     @Override

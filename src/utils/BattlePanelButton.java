@@ -20,6 +20,10 @@ public class BattlePanelButton extends JButton implements MouseListener {
     static private float textYStartUnpressed = 0.6F;
     static private float textXStartPressed = 0.405F;
     static private float textYStartPressed = 0.675F;
+    static private float iconXStartUnpressed = 0.3F;
+    static private float iconYStartUnpressed = 0.3F;
+    static private float iconXStartPressed = 0.305F;
+    static private float iconYStartPressed = 0.375F;
     static private int fontSize = 20;
 
     private BufferedImage btnDefault;
@@ -29,12 +33,25 @@ public class BattlePanelButton extends JButton implements MouseListener {
 
     private ArrayList<ActionListener> listeners = new ArrayList<>();
     private String text;
+    private BufferedImage iconImage;
     private BufferedImage image;
     private float textXStart;
     private float textYStart;
+    private float iconXStart;
+    private float iconYStart;
+
+    public BattlePanelButton(String text, BufferedImage iconImage) {
+        this.text = text;
+        this.iconImage = iconImage;
+        initButton();
+    }
 
     public BattlePanelButton(String text) {
         this.text = text;
+        initButton();
+    }
+
+    private void initButton() {
         try {
             btnDefault = ImageIO.read(new File("Assets/Buttons/BattlePanelButton_Default.png"));
             btnPressed = ImageIO.read(new File("Assets/Buttons/BattlePanelButton_Pressed.png"));
@@ -53,6 +70,8 @@ public class BattlePanelButton extends JButton implements MouseListener {
         this.addMouseListener(this);
         this.textXStart = textXStartUnpressed;
         this.textYStart = textYStartUnpressed;
+        this.iconXStart = iconXStartUnpressed;
+        this.iconYStart = iconYStartUnpressed;
         System.out.println("Creating button");
     }
 
@@ -69,11 +88,18 @@ public class BattlePanelButton extends JButton implements MouseListener {
 
     @Override
     protected void paintComponent(Graphics g) {
-        System.out.println("Painting button");
+        System.out.println("Painting button: " + this.text);
+        // Background
         g.drawImage(image,
                     0, 0, this.getWidth(), this.getHeight(),
                     0, 0, image.getWidth(), image.getHeight(),
                     null);
+        // Icon
+        if(iconImage != null) {
+            g.drawImage(iconImage, (int)(iconXStart*this.getWidth()), (int)(iconYStart*this.getHeight()), null);
+        }
+
+        // Text
         g.setFont(new Font("TimesRoman", Font.BOLD, fontSize));
         g.drawString(text, (int)(textXStart*this.getWidth()), (int)(textYStart*this.getHeight()));
     }
@@ -93,6 +119,8 @@ public class BattlePanelButton extends JButton implements MouseListener {
         if(isEnabled()) {
             this.textXStart = textXStartPressed;
             this.textYStart = textYStartPressed;
+            this.iconXStart = iconXStartPressed;
+            this.iconYStart = iconYStartPressed;
             image = btnPressed;
         } else {
             image = btnDisabled;
@@ -106,6 +134,8 @@ public class BattlePanelButton extends JButton implements MouseListener {
         if(isEnabled()) {
             this.textXStart = textXStartUnpressed;
             this.textYStart = textYStartUnpressed;
+            this.iconXStart = iconXStartUnpressed;
+            this.iconYStart = iconYStartUnpressed;
             image = btnHover;
             notifyListeners(e);
         } else {
@@ -120,6 +150,8 @@ public class BattlePanelButton extends JButton implements MouseListener {
         if(isEnabled()) {
             this.textXStart = textXStartUnpressed;
             this.textYStart = textYStartUnpressed;
+            this.iconXStart = iconXStartUnpressed;
+            this.iconYStart = iconYStartUnpressed;
             image = btnHover;
         } else {
             image = btnDisabled;
@@ -133,6 +165,8 @@ public class BattlePanelButton extends JButton implements MouseListener {
         if(isEnabled()) {
             this.textXStart = textXStartUnpressed;
             this.textYStart = textYStartUnpressed;
+            this.iconXStart = iconXStartUnpressed;
+            this.iconYStart = iconYStartUnpressed;
             image = btnDefault;
         } else {
             image = btnDisabled;
