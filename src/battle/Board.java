@@ -5,6 +5,7 @@ import javax.swing.Timer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.geom.GeneralPath;
 import java.awt.image.BufferedImage;
 import java.util.*;
 import java.util.List;
@@ -26,7 +27,8 @@ public class Board extends JPanel implements ActionListener {
     // Size constants
     public static int cellSize = 80;
     static int gridLineThickness = 2;
-    public static int cellThickness = cellSize / 3;
+    public static int cellYThickness = cellSize / 3;
+    public static int cellXThickness = cellSize / 5;
     public static int backgroundXPadding = cellSize / 3;
     public static int backgroundYPadding = cellSize / 5;
     static int realCellSize = cellSize - gridLineThickness;
@@ -85,7 +87,7 @@ public class Board extends JPanel implements ActionListener {
         this.numXCells = this.map.length;
         this.numYCells = this.map[0].length;
         this.boardDesiredWidth = cellSize*numXCells + backgroundXPadding*2;
-        this.boardDesiredHeight = cellSize*numYCells + Board.cellThickness + backgroundYPadding*2;
+        this.boardDesiredHeight = cellSize*numYCells + cellYThickness + backgroundYPadding*2;
 
         //TODO: Temporary code till character placement code exists
         //Team 1
@@ -110,7 +112,6 @@ public class Board extends JPanel implements ActionListener {
     public void paintComponent(Graphics g) {
         drawBackground(g);
         drawGround(g);
-        drawGrid(g);
         drawCellIndicators(g);
         drawObjects(g);
     }
@@ -122,10 +123,36 @@ public class Board extends JPanel implements ActionListener {
     }
 
     private void drawGround(Graphics g) {
+        for(int y=0; y<map[0].length; y++) {
+            for(int x=map.length-1; x>=0; x--) {
+                Cell cell = new Cell(x,y);
+                drawGroundCell(g, cell);
+            }
+        }
+    }
+
+    private void drawCellIndicators(Graphics g) {
+        drawMoveCells(g);
+        drawAbilityCells(g);
+        drawOrientationCells(g);
+    }
+
+    private void drawObjects(Graphics g) {
         for(int x=0; x<map.length; x++) {
             for(int y=0; y<map[0].length; y++) {
                 Cell cell = new Cell(x,y);
-                drawGroundCell(g, cell);
+                Cell TLPixel = cellToTLPixel(cell);
+                // TEMPORARY
+                TLPixel.y -= (cellSize/3);
+                Cell BRPixel = cellToBRPixel(cell);
+                // TEMPORARY
+                BRPixel.y -= (cellSize/3);
+
+                // Draw Cell Object
+                drawObjectCell(g, cell);
+
+                // Draw Character
+                drawCellCharacter(g, cell);
             }
         }
     }
@@ -141,42 +168,85 @@ public class Board extends JPanel implements ActionListener {
                     0, 0, img.getWidth(), img.getHeight(),
                     null);
 
+            drawCellGrid(g, cell);
+
             drawGroundCellThickness(g, cell, img);
         }
     }
 
     private void drawGroundCellThickness(Graphics g, Cell cell, BufferedImage img) {
-        Cell TLPixel = cellToTLThicknessPixel(cell);
-        Cell BRPixel = cellToBRThicknessPixel(cell);
+        // Y-axis thickness
+        Cell TLPixel = cellToTLYThicknessPixel(cell);
+        Cell BRPixel = cellToBRYThicknessPixel(cell);
+        Shape s = getYCellThicknessShape(cell);
+        drawCellThickness(g, img, s, TLPixel, BRPixel);
 
-        g.drawImage(img,
-                TLPixel.x, TLPixel.y, BRPixel.x + 1, BRPixel.y + 1, // Extra +1 because drawImage -1
+        // X-axis thickness
+        TLPixel = cellToTLXThicknessPixel(cell);
+        BRPixel = cellToBRXThicknessPixel(cell);
+        s = getXCellThicknessShape(cell);
+        drawCellThickness(g, img, s, TLPixel, BRPixel);
+    }
+
+    private void drawCellThickness(Graphics g, BufferedImage img, Shape s, Cell TLPixel, Cell BRPixel) {
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setClip(s);
+        g2.drawImage(img,
+                TLPixel.x, TLPixel.y, BRPixel.x + 1, BRPixel.y + 1,
                 0, 0, img.getWidth(), img.getHeight(),
                 null);
-
-        // Make thickness darker to appear as a shadow
-        g.setColor(new Color(0, 0, 0, tileThicknessAlpha));
-
-        g.fillRect(TLPixel.x, TLPixel.y, cellSize, cellThickness);
+        g2.setColor(new Color(0, 0, 0, tileThicknessAlpha));
+        g2.fill(s);
+        g2.setColor(new Color(0, 0, 0, gridLineAlpha));
+        g2.setStroke(new BasicStroke(gridLineThickness*2));
+        g2.draw(s);
+        g2.setClip(null);
     }
 
-    private void drawGrid(Graphics g) {
-        Color gridColor = new Color(0, 0, 0, gridLineAlpha);
+    private Shape getXCellThicknessShape(Cell cell) {
+        Cell TLPixel = cellToTLPixel(cell);
+        GeneralPath path = new GeneralPath();
+        path.moveTo(TLPixel.x,TLPixel.y);
 
-        for(int x=0; x<map.length; x++) {
-            for(int y=0; y<map[0].length; y++) {
-                Cell cell = new Cell(x,y);
-                if(map[cell.x][cell.y].isPresent() && map[cell.x][cell.y].ground != null) {
-                    drawCellGrid(g, cell, gridColor);
-                }
-            }
-        }
+        TLPixel.x -= cellXThickness;
+        TLPixel.y += cellYThickness;
+        path.lineTo(TLPixel.x,TLPixel.y);
+
+        TLPixel.y += cellSize;
+        path.lineTo(TLPixel.x,TLPixel.y);
+
+        TLPixel.x += cellXThickness;
+        TLPixel.y -= cellYThickness;
+        path.lineTo(TLPixel.x,TLPixel.y);
+
+        path.closePath();
+
+        return path;
     }
 
-    private void drawCellIndicators(Graphics g) {
-        drawMoveCells(g);
-        drawAbilityCells(g);
-        drawOrientationCells(g);
+    private Shape getYCellThicknessShape(Cell cell) {
+        // Grab 1 cell lower top left pixel
+        Cell adjustedCell = new Cell(cell);
+        adjustedCell.y += 1;
+
+        Cell TLPixel = cellToTLPixel(adjustedCell);
+        GeneralPath path = new GeneralPath();
+        path.moveTo(TLPixel.x,TLPixel.y);
+
+        TLPixel.x -= cellXThickness;
+        TLPixel.y += cellYThickness;
+        path.lineTo(TLPixel.x,TLPixel.y);
+
+        TLPixel.x += cellSize;
+        path.lineTo(TLPixel.x,TLPixel.y);
+
+        TLPixel.x += cellXThickness;
+        TLPixel.y -= cellYThickness;
+        path.lineTo(TLPixel.x,TLPixel.y);
+
+        path.closePath();
+
+        return path;
     }
 
     private void drawMoveCells(Graphics g) {
@@ -220,26 +290,6 @@ public class Board extends JPanel implements ActionListener {
                          (float)color.getGreen()/255F,
                          (float)color.getBlue()/255F,
                          ((float)color.getAlpha()/255F)*getPulseFrame());
-    }
-
-    private void drawObjects(Graphics g) {
-        for(int x=0; x<map.length; x++) {
-            for(int y=0; y<map[0].length; y++) {
-                Cell cell = new Cell(x,y);
-                Cell TLPixel = cellToTLPixel(cell);
-                // TEMPORARY
-                TLPixel.y -= (cellSize/3);
-                Cell BRPixel = cellToBRPixel(cell);
-                // TEMPORARY
-                BRPixel.y -= (cellSize/3);
-
-                // Draw Cell Object
-                drawObjectCell(g, cell);
-
-                // Draw Character
-                drawCellCharacter(g, cell);
-            }
-        }
     }
 
     private void drawObjectCell(Graphics g, Cell cell) {
@@ -340,8 +390,8 @@ public class Board extends JPanel implements ActionListener {
         g2.setStroke(oldStroke);
     }
 
-    private void drawCellGrid(Graphics g, Cell cell, Color color) {
-        g.setColor(color);
+    private void drawCellGrid(Graphics g, Cell cell) {
+        g.setColor(new Color(0, 0, 0, gridLineAlpha));
         Cell topLeftPixel = cellToTLPixel(cell);
 
         Graphics2D g2 = (Graphics2D) g;
@@ -516,15 +566,30 @@ public class Board extends JPanel implements ActionListener {
         return new Cell((cell.x+1)*cellSize-1 + backgroundXPadding, (cell.y+1)*cellSize-1 + backgroundYPadding);
     }
 
-    public Cell cellToTLThicknessPixel(Cell cell) {
+    public Cell cellToTLYThicknessPixel(Cell cell) {
         cell = new Cell(cell.x, cell.y+1);
-        return cellToTLPixel(cell);
+        Cell TLPixel = cellToTLPixel(cell);
+        TLPixel.x -= cellXThickness;
+        return TLPixel;
     }
 
-    public Cell cellToBRThicknessPixel(Cell cell) {
-        Cell pixel = cellToBRPixel(cell);
-        pixel.y += cellThickness;
-        return pixel;
+    public Cell cellToBRYThicknessPixel(Cell cell) {
+        Cell BRPixel = cellToBRPixel(cell);
+        BRPixel.y += cellYThickness + 1; // cellToBRPixel removes an extra pixel for inclusive conditions
+        return BRPixel;
+    }
+
+    public Cell cellToTLXThicknessPixel(Cell cell) {
+        Cell TLPixel = cellToTLPixel(cell);
+        TLPixel.x -= cellXThickness;
+        return TLPixel;
+    }
+
+    public Cell cellToBRXThicknessPixel(Cell cell) {
+        cell = new Cell(cell.x, cell.y+1);
+        Cell BRPixel = cellToTLPixel(cell);
+        BRPixel.y += cellYThickness;
+        return BRPixel;
     }
 
     public boolean isBoardPixel(int x, int y) {
