@@ -27,10 +27,14 @@ public class Board extends JPanel implements ActionListener {
     public static int cellSize = 80;
     static int gridLineThickness = 2;
     public static int cellThickness = cellSize / 3;
+    public static int backgroundXPadding = cellSize / 3;
+    public static int backgroundYPadding = cellSize / 5;
     static int realCellSize = cellSize - gridLineThickness;
     static int healthBarPadding = (int) ((double)Board.realCellSize * 0.05);
     static int healthBarWidth = (int) ((double)Board.realCellSize * 0.7);
     static int healthBarHeight = (int) ((double)Board.realCellSize * 0.1);
+    public int boardDesiredWidth;
+    public int boardDesiredHeight;
 
     // Animation timer constants
     static int animationTimerDelay = 100;
@@ -80,6 +84,8 @@ public class Board extends JPanel implements ActionListener {
         this.map = MapParser.decodeMap(groundMap, objectMap);
         this.numXCells = this.map.length;
         this.numYCells = this.map[0].length;
+        this.boardDesiredWidth = cellSize*numXCells + backgroundXPadding*2;
+        this.boardDesiredHeight = cellSize*numYCells + Board.cellThickness + backgroundYPadding*2;
 
         //TODO: Temporary code till character placement code exists
         //Team 1
@@ -102,10 +108,17 @@ public class Board extends JPanel implements ActionListener {
     }
 
     public void paintComponent(Graphics g) {
+        drawBackground(g);
         drawGround(g);
         drawGrid(g);
         drawCellIndicators(g);
         drawObjects(g);
+    }
+
+    private void drawBackground(Graphics g) {
+        // TEMOPRARY: need background image stuff
+        g.setColor(new Color(255,0,0));
+        g.fillRect(0, 0, getWidth(), getHeight());
     }
 
     private void drawGround(Graphics g) {
@@ -149,25 +162,31 @@ public class Board extends JPanel implements ActionListener {
 
     private void drawGrid(Graphics g) {
         g.setColor(new Color(0, 0, 0, gridLineAlpha));
-        Cell topLeftPixel;
 
         // Vertical lines
-        g.fillRect(0, 0, gridLineThickness, getHeight());
+        Cell TLPixel = cellToTLPixel(new Cell(0,0));
+        int topPixel = TLPixel.y;
+        int yLength = cellSize*numYCells;
+        int xPixel = TLPixel.x;
+        g.fillRect(xPixel, topPixel, gridLineThickness, yLength);
         for(int i=1; i<numXCells; i++) {
-            topLeftPixel = cellToTLPixel(new Cell(i,0));
-            g.fillRect(topLeftPixel.x-gridLineThickness, 0, gridLineThickness*2, getHeight());
+            xPixel = cellToTLPixel(new Cell(i,0)).x;
+            g.fillRect(xPixel-gridLineThickness, topPixel, gridLineThickness*2, yLength);
         }
-        topLeftPixel = cellToTLPixel(new Cell(numXCells,0));
-        g.fillRect(topLeftPixel.x-gridLineThickness, 0, gridLineThickness, getHeight());
+        xPixel = cellToTLPixel(new Cell(numXCells,0)).x;
+        g.fillRect(xPixel-gridLineThickness, topPixel, gridLineThickness, yLength);
 
         // Horizontal lines
-        g.fillRect(0, 0, getWidth(), gridLineThickness);
+        int leftPixel = TLPixel.x;
+        int xLength = cellSize*numXCells;
+        int yPixel = TLPixel.y;
+        g.fillRect(leftPixel, yPixel, xLength, gridLineThickness);
         for(int i=1; i<numYCells; i++) {
-            topLeftPixel = cellToTLPixel(new Cell(0,i));
-            g.fillRect(0, topLeftPixel.y-gridLineThickness, getWidth(), gridLineThickness*2);
+            yPixel = cellToTLPixel(new Cell(0,i)).y;
+            g.fillRect(leftPixel, yPixel-gridLineThickness, xLength, gridLineThickness*2);
         }
-        topLeftPixel = cellToTLPixel(new Cell(0,numYCells));
-        g.fillRect(0, topLeftPixel.y-gridLineThickness, getWidth(), gridLineThickness);
+        yPixel = cellToTLPixel(new Cell(0,numYCells)).y;
+        g.fillRect(leftPixel, yPixel-gridLineThickness, xLength, gridLineThickness);
     }
 
     private void drawCellIndicators(Graphics g) {
@@ -488,11 +507,11 @@ public class Board extends JPanel implements ActionListener {
     }
 
     public Cell cellToTLPixel(Cell cell) {
-        return new Cell(cell.x*cellSize, cell.y*cellSize);
+        return new Cell(cell.x*cellSize + backgroundXPadding, cell.y*cellSize + backgroundYPadding);
     }
 
     public Cell cellToBRPixel(Cell cell) {
-        return new Cell((cell.x+1)*cellSize-1, (cell.y+1)*cellSize-1);
+        return new Cell((cell.x+1)*cellSize-1 + backgroundXPadding, (cell.y+1)*cellSize-1 + backgroundYPadding);
     }
 
     public Cell cellToTLThicknessPixel(Cell cell) {
@@ -506,8 +525,18 @@ public class Board extends JPanel implements ActionListener {
         return pixel;
     }
 
+    public boolean isBoardPixel(int x, int y) {
+        return  x >= backgroundXPadding &&
+                x < numXCells*cellSize + backgroundXPadding &&
+                y >= backgroundYPadding &&
+                y < numYCells*cellSize + backgroundYPadding;
+    }
+
     public Cell pixelToCell(int x, int y) {
-        return new Cell(x/cellSize, y/cellSize);
+        if(isBoardPixel(x,y)) {
+            return new Cell((x - backgroundXPadding) / cellSize, (y - backgroundYPadding) / cellSize);
+        }
+        return null;
     }
 
 }

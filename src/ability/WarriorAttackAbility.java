@@ -6,6 +6,6 @@ package ability;
 public class WarriorAttackAbility extends EnemyTargetAbility {
     public WarriorAttackAbility() {
         super(8,1);
-        iconFilename = "Assets/ButtonIcons/attackIcon.png";
+        iconFilename = "Assets/ButtonIcons/SwordAttackIcon.png";
     }
 }

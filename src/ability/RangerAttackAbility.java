@@ -10,5 +10,6 @@ import java.util.List;
 public class RangerAttackAbility extends EnemyTargetAbility {
     public RangerAttackAbility() {
         super(4, 5);
+        iconFilename = "Assets/ButtonIcons/ArcherAttackIcon.png";
     }
 }

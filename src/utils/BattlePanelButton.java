@@ -21,9 +21,9 @@ public class BattlePanelButton extends JButton implements MouseListener {
     static private float textXStartPressed = 0.405F;
     static private float textYStartPressed = 0.675F;
     static private float iconXStartUnpressed = 0.3F;
-    static private float iconYStartUnpressed = 0.3F;
+    static private float iconYStartUnpressed = 0.2F;
     static private float iconXStartPressed = 0.305F;
-    static private float iconYStartPressed = 0.375F;
+    static private float iconYStartPressed = 0.275F;
     static private int fontSize = 20;
 
     private BufferedImage btnDefault;

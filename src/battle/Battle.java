@@ -49,11 +49,11 @@ public class Battle extends JFrame implements MouseListener{
         //setSize(Board.cellSize*board.numXCells+(borderLen*2), Board.cellSize*board.numYCells+borderLen+topBorderLen+BattlePanel.panelHeight);
 
         // Board
-        board.setPreferredSize(new Dimension(Board.cellSize*board.numXCells, (Board.cellSize*board.numYCells) + Board.cellThickness ));
+        board.setPreferredSize(new Dimension(board.boardDesiredWidth, board.boardDesiredHeight));
         add(board, BorderLayout.NORTH);
 
         // BattlePanel
-        battlePanel.setPreferredSize(new Dimension(Board.cellSize*board.numXCells, BattlePanel.panelHeight));
+        battlePanel.setPreferredSize(new Dimension(board.boardDesiredWidth, BattlePanel.panelHeight));
         add(battlePanel, BorderLayout.SOUTH);
 
         setResizable(false);
@@ -106,9 +106,11 @@ public class Battle extends JFrame implements MouseListener{
         Object sourcePanel = e.getSource();
         if(sourcePanel instanceof Board) {
             System.err.println("Board was clicked: (" + e.getX() + "," + e.getY() + ")");
-            Cell cell = board.pixelToCell(e.getX(), e.getY());
-            System.err.println("Board was clicked: (" + cell.x + "," + cell.y + ")");
-            currentGameState.onBoardClicked(cell);
+            if(board.isBoardPixel(e.getX(), e.getY())) {
+                Cell cell = board.pixelToCell(e.getX(), e.getY());
+                System.err.println("Board was clicked: (" + cell.x + "," + cell.y + ")");
+                currentGameState.onBoardClicked(cell);
+            }
         } else if(sourcePanel instanceof BattlePanel) {
             System.err.println("BattlePanel was clicked: (" + e.getX() + "," + e.getY() + ")");
         } else {
