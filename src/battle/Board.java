@@ -161,32 +161,16 @@ public class Board extends JPanel implements ActionListener {
     }
 
     private void drawGrid(Graphics g) {
-        g.setColor(new Color(0, 0, 0, gridLineAlpha));
+        Color gridColor = new Color(0, 0, 0, gridLineAlpha);
 
-        // Vertical lines
-        Cell TLPixel = cellToTLPixel(new Cell(0,0));
-        int topPixel = TLPixel.y;
-        int yLength = cellSize*numYCells;
-        int xPixel = TLPixel.x;
-        g.fillRect(xPixel, topPixel, gridLineThickness, yLength);
-        for(int i=1; i<numXCells; i++) {
-            xPixel = cellToTLPixel(new Cell(i,0)).x;
-            g.fillRect(xPixel-gridLineThickness, topPixel, gridLineThickness*2, yLength);
+        for(int x=0; x<map.length; x++) {
+            for(int y=0; y<map[0].length; y++) {
+                Cell cell = new Cell(x,y);
+                if(map[cell.x][cell.y].isPresent() && map[cell.x][cell.y].ground != null) {
+                    drawCellGrid(g, cell, gridColor);
+                }
+            }
         }
-        xPixel = cellToTLPixel(new Cell(numXCells,0)).x;
-        g.fillRect(xPixel-gridLineThickness, topPixel, gridLineThickness, yLength);
-
-        // Horizontal lines
-        int leftPixel = TLPixel.x;
-        int xLength = cellSize*numXCells;
-        int yPixel = TLPixel.y;
-        g.fillRect(leftPixel, yPixel, xLength, gridLineThickness);
-        for(int i=1; i<numYCells; i++) {
-            yPixel = cellToTLPixel(new Cell(0,i)).y;
-            g.fillRect(leftPixel, yPixel-gridLineThickness, xLength, gridLineThickness*2);
-        }
-        yPixel = cellToTLPixel(new Cell(0,numYCells)).y;
-        g.fillRect(leftPixel, yPixel-gridLineThickness, xLength, gridLineThickness);
     }
 
     private void drawCellIndicators(Graphics g) {
@@ -343,10 +327,28 @@ public class Board extends JPanel implements ActionListener {
     private void drawCellBorder(Graphics g, Cell cell, Color color) {
         g.setColor(color);
         Cell topLeftPixel = cellToTLPixel(cell);
-        g.fillRect(topLeftPixel.x, topLeftPixel.y, cellSize, gridLineThickness);
-        g.fillRect(topLeftPixel.x, topLeftPixel.y, gridLineThickness, cellSize);
-        g.fillRect(topLeftPixel.x, topLeftPixel.y+cellSize-gridLineThickness, cellSize, gridLineThickness);
-        g.fillRect(topLeftPixel.x+cellSize-gridLineThickness, topLeftPixel.y, gridLineThickness, cellSize);
+//        Old way of drawing (should remove once decided)
+//        g.fillRect(topLeftPixel.x, topLeftPixel.y, cellSize, gridLineThickness);
+//        g.fillRect(topLeftPixel.x, topLeftPixel.y, gridLineThickness, cellSize);
+//        g.fillRect(topLeftPixel.x, topLeftPixel.y+cellSize-gridLineThickness, cellSize, gridLineThickness);
+//        g.fillRect(topLeftPixel.x+cellSize-gridLineThickness, topLeftPixel.y, gridLineThickness, cellSize);
+
+        Graphics2D g2 = (Graphics2D) g;
+        Stroke oldStroke = g2.getStroke();
+        g2.setStroke(new BasicStroke(gridLineThickness));
+        g2.drawRect(topLeftPixel.x+gridLineThickness, topLeftPixel.y+gridLineThickness, cellSize-(gridLineThickness*2), cellSize-(gridLineThickness*2));
+        g2.setStroke(oldStroke);
+    }
+
+    private void drawCellGrid(Graphics g, Cell cell, Color color) {
+        g.setColor(color);
+        Cell topLeftPixel = cellToTLPixel(cell);
+
+        Graphics2D g2 = (Graphics2D) g;
+        Stroke oldStroke = g2.getStroke();
+        g2.setStroke(new BasicStroke(gridLineThickness));
+        g2.drawRect(topLeftPixel.x+1, topLeftPixel.y+1, cellSize-gridLineThickness, cellSize-gridLineThickness);
+        g2.setStroke(oldStroke);
     }
 
     private float getPulseFrame() {
