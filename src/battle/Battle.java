@@ -20,6 +20,8 @@ public class Battle extends JFrame implements MouseListener{
 
     private Board board;
     private BattlePanel battlePanel;
+    private PortraitPanel leftPortrait;
+    private PortraitPanel rightPortrait;
     public List<Character> team1;
     public List<Character> team2;
     public List<Character> characterOrder;
@@ -33,7 +35,10 @@ public class Battle extends JFrame implements MouseListener{
         this.team1 = team1;
         this.team2 = team2;
 
-        board = new Board(team1, team2, groundMap, objectsMap);
+        leftPortrait = new PortraitPanel();
+        rightPortrait = new PortraitPanel();
+
+        board = new Board(this, groundMap, objectsMap);
         board.addMouseListener(this);
 
         battlePanel = new BattlePanel();
@@ -52,9 +57,17 @@ public class Battle extends JFrame implements MouseListener{
         board.setPreferredSize(new Dimension(board.boardDesiredWidth, board.boardDesiredHeight));
         add(board, BorderLayout.NORTH);
 
+        // Left Portrait
+        leftPortrait.setPreferredSize(new Dimension(PortraitPanel.panelWidth, PortraitPanel.panelHeight));
+        add(leftPortrait, BorderLayout.WEST);
+
+        // Right Portrait
+        rightPortrait.setPreferredSize(new Dimension(PortraitPanel.panelWidth, PortraitPanel.panelHeight));
+        add(rightPortrait, BorderLayout.EAST);
+
         // BattlePanel
-        battlePanel.setPreferredSize(new Dimension(board.boardDesiredWidth, BattlePanel.panelHeight));
-        add(battlePanel, BorderLayout.SOUTH);
+        battlePanel.setPreferredSize(new Dimension(board.boardDesiredWidth - PortraitPanel.panelWidth*2, BattlePanel.panelHeight));
+        add(battlePanel, BorderLayout.CENTER);
 
         setResizable(false);
         pack();
@@ -99,6 +112,22 @@ public class Battle extends JFrame implements MouseListener{
         activeCharacter = characterOrder.get(charIndex);
 
         currentGameState = new MenuState(this, board, battlePanel);
+    }
+
+    public void updateCharacterStatus() {
+        // Check for dead characters on both teams
+        List<Character> deadCharacters = new ArrayList<>();
+        for(Character character : characterOrder) {
+            if(character.isDead()) {
+                deadCharacters.add(character);
+            }
+        }
+
+        for(Character deadCharacter : deadCharacters) {
+            team1.remove(deadCharacter);
+            team2.remove(deadCharacter);
+            characterOrder.remove(deadCharacter);
+        }
     }
 
     @Override

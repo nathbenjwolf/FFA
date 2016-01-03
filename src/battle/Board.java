@@ -64,6 +64,10 @@ public class Board extends JPanel implements ActionListener, MouseMotionListener
     static Color orientationCellColorFill = new Color(0.0F, 0.0F, 0.1F, 0.5F);
     static Color orientationCellColorBorder = new Color(0.0F, 0.0F, 0.1F, 1F);
 
+    // Active Character Cell Constants
+    static Color activeCharacterCellColorFill = new Color(0.855F, 0.647F, 0.125F);
+    static Color activeCharacterCellColorBorder = new Color(0.824F, 0.412F, 0.118F);
+
     int numXCells;
     int numYCells;
     MapCell[][] map;
@@ -73,20 +77,13 @@ public class Board extends JPanel implements ActionListener, MouseMotionListener
     Set<Cell> orientationCells = new HashSet<>();
     Cell mouseHoverCell;
 
-    private List<Character> team1;
-    private List<Character> team2;
-    private List<Character> allCharacters;
-    private Map<Character, Cell> characterLocations = new HashMap<>();
+    private Battle battle;
 
     private Timer animationTimer;
     private int animationTick;
 
-    public Board(List<Character> team1, List<Character> team2, String groundMap, String objectMap) {
-        this.team1 = team1;
-        this.team2 = team2;
-        this.allCharacters = new ArrayList<>();
-        this.allCharacters.addAll(team1);
-        this.allCharacters.addAll(team2);
+    public Board(Battle battle, String groundMap, String objectMap) {
+        this.battle = battle;
         this.map = MapParser.decodeMap(groundMap, objectMap);
         this.numXCells = this.map.length;
         this.numYCells = this.map[0].length;
@@ -95,15 +92,15 @@ public class Board extends JPanel implements ActionListener, MouseMotionListener
 
         //TODO: Temporary code till character placement code exists
         //Team 1
-        for(int i = 0; i < team1.size(); i++) {
-            team1.get(i).cell = new Cell(0,i+3);
-            team1.get(i).direction = Direction.RIGHT;
+        for(int i = 0; i < battle.team1.size(); i++) {
+            battle.team1.get(i).cell = new Cell(0,i+3);
+            battle.team1.get(i).direction = Direction.RIGHT;
         }
 
         //Team 1
-        for(int i = 0; i < team2.size(); i++) {
-            team2.get(i).cell = new Cell(numXCells-1,i+3);
-            team2.get(i).direction = Direction.LEFT;
+        for(int i = 0; i < battle.team2.size(); i++) {
+            battle.team2.get(i).cell = new Cell(numXCells-1,i+3);
+            battle.team2.get(i).direction = Direction.LEFT;
         }
 
         // Setup animation timer
@@ -142,6 +139,7 @@ public class Board extends JPanel implements ActionListener, MouseMotionListener
         drawMoveCells(g);
         drawAbilityCells(g);
         drawOrientationCells(g);
+        drawActiveCharacterCell(g);
     }
 
     private void drawObjects(Graphics g) {
@@ -266,21 +264,21 @@ public class Board extends JPanel implements ActionListener, MouseMotionListener
         Color fillColor = getPulseColor(moveCellColorFill);
         Color borderColor = getPulseColor(moveCellColorBorder);
         for(Cell cell: moveCells) {
-            drawCell(g, cell, fillColor);
+            drawCellFill(g, cell, fillColor);
             drawCellBorder(g, cell, borderColor);
         }
     }
 
     private void drawAbilityCells(Graphics g) {
         for(Cell cell: abilityRangeCells) {
-            drawCell(g, cell, abilityRangeCellColorFill);
+            drawCellFill(g, cell, abilityRangeCellColorFill);
             drawCellBorder(g, cell, abilityRangeCellColorBorder);
         }
 
         Color fillColor = getPulseColor(abilityTargetCellColorFill);
         Color borderColor = getPulseColor(abilityTargetCellColorBorder);
         for(Cell cell: abilityTargetCells) {
-            drawCell(g, cell, fillColor);
+            drawCellFill(g, cell, fillColor);
             drawCellBorder(g, cell, borderColor);
         }
     }
@@ -289,9 +287,16 @@ public class Board extends JPanel implements ActionListener, MouseMotionListener
         Color fillColor = getPulseColor(orientationCellColorFill);
         Color borderColor = getPulseColor(orientationCellColorBorder);
         for(Cell cell: orientationCells) {
-            drawCell(g, cell, fillColor);
+            drawCellFill(g, cell, fillColor);
             drawCellBorder(g, cell, borderColor);
         }
+    }
+
+    private void drawActiveCharacterCell(Graphics g) {
+        Color fillColor = getPulseColor(activeCharacterCellColorFill);
+        Color borderColor = getPulseColor(activeCharacterCellColorBorder);
+        drawCellFill(g, battle.activeCharacter.cell, fillColor);
+        drawCellBorder(g, battle.activeCharacter.cell, borderColor);
     }
 
     private Color getPulseColor(Color color) {
@@ -328,7 +333,7 @@ public class Board extends JPanel implements ActionListener, MouseMotionListener
         // TEMPORARY
         BRPixel.y -= (cellSize/3);
 
-        for(Character character: allCharacters) {
+        for(Character character: battle.characterOrder) {
             if(character.cell.equals(cell)) {
                 BufferedImage img = character.getImage();
 
@@ -387,6 +392,12 @@ public class Board extends JPanel implements ActionListener, MouseMotionListener
         g.setColor(color);
         Cell topLeftPixel = cellToTLPixel(cell);
         g.fillRect(topLeftPixel.x, topLeftPixel.y, cellSize, cellSize);
+    }
+
+    private void drawCellFill(Graphics g, Cell cell, Color color) {
+        g.setColor(color);
+        Cell topLeftPixel = cellToTLPixel(cell);
+        g.fillRect(topLeftPixel.x+gridLineThickness, topLeftPixel.y+gridLineThickness, cellSize-(gridLineThickness*2), cellSize-(gridLineThickness*2));
     }
 
     private void drawCellBorder(Graphics g, Cell cell, Color color) {
@@ -479,7 +490,7 @@ public class Board extends JPanel implements ActionListener, MouseMotionListener
     public boolean useAbility(Character character, Ability ability, Cell cell) {
         if(isAbilityCell(cell)) {
             ability.useAbility(map, getTeam(character), getEnemyTeam(character), character, cell);
-            updateCharacterStatus();
+            battle.updateCharacterStatus();
             clearAbilityCells();
             return true;
         } else {
@@ -511,24 +522,8 @@ public class Board extends JPanel implements ActionListener, MouseMotionListener
         repaint();
     }
 
-    private void updateCharacterStatus() {
-        // Check for dead characters on both teams
-        List<Character> deadCharacters = new ArrayList<>();
-        for(Character character : allCharacters) {
-            if(character.isDead()) {
-                deadCharacters.add(character);
-            }
-        }
-
-        for(Character deadCharacter : deadCharacters) {
-            team1.remove(deadCharacter);
-            team2.remove(deadCharacter);
-            allCharacters.remove(deadCharacter);
-        }
-    }
-
     private Character getCharacterOnCell(Cell cell) {
-        for(Character character : allCharacters) {
+        for(Character character : battle.characterOrder) {
             if(character.cell.equals(cell)) {
                 return character;
             }
@@ -546,11 +541,11 @@ public class Board extends JPanel implements ActionListener, MouseMotionListener
     }
 
     private List<Character> getTeam(Character character) {
-        return team1.contains(character) ? team1 : team2;
+        return battle.team1.contains(character) ? battle.team1 : battle.team2;
     }
 
     private List<Character> getEnemyTeam(Character character) {
-        return team2.contains(character) ? team1 : team2;
+        return battle.team2.contains(character) ? battle.team1 : battle.team2;
     }
 
     private Set<Cell> getTeamLocations(Character character) {
@@ -623,14 +618,11 @@ public class Board extends JPanel implements ActionListener, MouseMotionListener
 
     @Override
     public void mouseDragged(MouseEvent e) {
-        System.out.println("Dragged");
-        System.out.println("x: " + e.getPoint().x + " y: " + e.getPoint().y);
+        mouseMoved(e);
     }
 
     @Override
     public void mouseMoved(MouseEvent e) {
-        System.out.println("Moved");
-        System.out.println("x: " + e.getPoint().x + " y: " + e.getPoint().y);
         mouseHoverCell = pixelToCell(e.getPoint().x, e.getPoint().y);
         repaint();
     }

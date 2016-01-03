@@ -21,6 +21,7 @@ import java.io.IOException;
  *
  * Object Types:
  * Brown - (185, 122, 87) - tree
+ * Grey - (127, 127, 127) - boulder
  * White - (255, 255, 255) - NONE
  */
 public final class MapParser {
@@ -30,6 +31,7 @@ public final class MapParser {
 
     // Object types:
     private static final int tree = 0xB97A57;
+    private static final int boulder = 0x7F7F7F;
 
     // Both:
     private static final int NONE = 0xFFFFFF;
@@ -76,6 +78,7 @@ public final class MapParser {
     private static ObjectElement getObjectElement(int rgb) {
         switch(rgb) {
             case tree:  return new Tree();
+            case boulder: return new Boulder();
 
             case NONE:
             default: return null;
