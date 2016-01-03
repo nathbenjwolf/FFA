@@ -5,6 +5,8 @@ import javax.swing.Timer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionListener;
 import java.awt.geom.GeneralPath;
 import java.awt.image.BufferedImage;
 import java.util.*;
@@ -22,7 +24,7 @@ import utils.PathFinding;
 /**
  * Created by Nathan on 11/14/2015.
  */
-public class Board extends JPanel implements ActionListener {
+public class Board extends JPanel implements ActionListener, MouseMotionListener {
 
     // Size constants
     public static int cellSize = 80;
@@ -32,9 +34,10 @@ public class Board extends JPanel implements ActionListener {
     public static int backgroundXPadding = cellSize / 3;
     public static int backgroundYPadding = cellSize / 5;
     static int realCellSize = cellSize - gridLineThickness;
-    static int healthBarPadding = (int) ((double)Board.realCellSize * 0.05);
-    static int healthBarWidth = (int) ((double)Board.realCellSize * 0.7);
-    static int healthBarHeight = (int) ((double)Board.realCellSize * 0.1);
+    static int healthBarXPadding = (int) ((double)cellSize * 0.15);
+    static int healthBarYPadding = (int) ((double)cellSize * 0.05);
+    static int healthBarWidth = (int) ((double)cellSize * 0.7);
+    static int healthBarHeight = (int) ((double)cellSize * 0.1);
     public int boardDesiredWidth;
     public int boardDesiredHeight;
 
@@ -68,6 +71,7 @@ public class Board extends JPanel implements ActionListener {
     Set<Cell> abilityTargetCells = new HashSet<>();
     Set<Cell> abilityRangeCells = new HashSet<>();
     Set<Cell> orientationCells = new HashSet<>();
+    Cell mouseHoverCell;
 
     private List<Character> team1;
     private List<Character> team2;
@@ -107,6 +111,9 @@ public class Board extends JPanel implements ActionListener {
         animationTimer = new Timer(animationTimerDelay, this);
         animationTimer.setInitialDelay(animationTimerDelay);
         animationTimer.start();
+
+        // Mouse detector
+        addMouseMotionListener(this);
     }
 
     public void paintComponent(Graphics g) {
@@ -198,9 +205,11 @@ public class Board extends JPanel implements ActionListener {
         g2.setColor(new Color(0, 0, 0, tileThicknessAlpha));
         g2.fill(s);
         g2.setColor(new Color(0, 0, 0, gridLineAlpha));
+        Stroke oldStroke = g2.getStroke();
         g2.setStroke(new BasicStroke(gridLineThickness*2));
         g2.draw(s);
         g2.setClip(null);
+        g2.setStroke(oldStroke);
     }
 
     private Shape getXCellThicknessShape(Cell cell) {
@@ -327,8 +336,14 @@ public class Board extends JPanel implements ActionListener {
                         TLPixel.x, TLPixel.y, BRPixel.x + 1, BRPixel.y + 1, // Extra +1 because drawImage -1
                         0, 0, img.getWidth(), img.getHeight(),
                         null);
+
+                if(mouseHoverCell != null && mouseHoverCell.equals(character.cell)) {
+                    drawHealthBar(g, character);
+                }
             }
         }
+
+
     }
 
     private void drawCharacters(Graphics g, List<Character> characters) {
@@ -354,9 +369,9 @@ public class Board extends JPanel implements ActionListener {
 
     private void drawHealthBar(Graphics g, Character character) {
         Cell TLPixel = cellToTLPixel(character.cell);
-        TLPixel.x += healthBarPadding;
+        TLPixel.x += healthBarXPadding;
         TLPixel.y -= (cellSize/3);
-        TLPixel.y += healthBarPadding;
+        TLPixel.y += healthBarYPadding;
 
         // Health bar border
         g.setColor(Color.WHITE);
@@ -606,4 +621,17 @@ public class Board extends JPanel implements ActionListener {
         return null;
     }
 
+    @Override
+    public void mouseDragged(MouseEvent e) {
+        System.out.println("Dragged");
+        System.out.println("x: " + e.getPoint().x + " y: " + e.getPoint().y);
+    }
+
+    @Override
+    public void mouseMoved(MouseEvent e) {
+        System.out.println("Moved");
+        System.out.println("x: " + e.getPoint().x + " y: " + e.getPoint().y);
+        mouseHoverCell = pixelToCell(e.getPoint().x, e.getPoint().y);
+        repaint();
+    }
 }
