@@ -140,7 +140,7 @@ public class Board extends JPanel implements ActionListener, MouseMotionListener
         drawBackground(g);
         drawGround(g);
         drawCellIndicators(g);
-        //drawObjects(g);
+        drawObjects(g);
     }
 
     private void drawBackground(Graphics g) {
@@ -169,12 +169,6 @@ public class Board extends JPanel implements ActionListener, MouseMotionListener
         for(int y=0; y<map[0].length; y++) {
             for(int x=0; x<map.length; x++) {
                 Cell cell = new Cell(x,y);
-                Cell TLPixel = cellToTLPixel(cell);
-                // TEMPORARY
-                TLPixel.y -= (cellSize/3);
-                Cell BRPixel = cellToBRPixel(cell);
-                // TEMPORARY
-                BRPixel.y -= (cellSize/3);
 
                 // Draw Cell Object
                 drawObjectCell(g, cell);
@@ -332,10 +326,10 @@ public class Board extends JPanel implements ActionListener, MouseMotionListener
 
     private void drawObjectCell(Graphics g, Cell cell) {
         if(map[cell.x][cell.y].isPresent()) {
-            Cell TLPixel = cellToTLPixel(cell);
+            Cell TLPixel = cellToTLDrawObjectPixel(cell);
             // TEMPORARY
-            TLPixel.y -= (cellSize/2);
-            Cell BRPixel = cellToBRPixel(cell);
+//            TLPixel.y -= (cellSize/2);
+            Cell BRPixel = cellToBRDrawObjectPixel(cell);
             // TEMPORARY
             BRPixel.y -= (cellSize/4);
             if(map[cell.x][cell.y].isPresent() && map[cell.x][cell.y].object != null) {
@@ -350,10 +344,10 @@ public class Board extends JPanel implements ActionListener, MouseMotionListener
     }
 
     private void drawCellCharacter(Graphics g, Cell cell) {
-        Cell TLPixel = cellToTLPixel(cell);
+        Cell TLPixel = cellToTLDrawObjectPixel(cell);
         // TEMPORARY
-        TLPixel.y -= (cellSize/3);
-        Cell BRPixel = cellToBRPixel(cell);
+//        TLPixel.y -= (cellSize/3);
+        Cell BRPixel = cellToBRDrawObjectPixel(cell);
         // TEMPORARY
         BRPixel.y -= (cellSize/3);
 
@@ -397,7 +391,7 @@ public class Board extends JPanel implements ActionListener, MouseMotionListener
     }
 
     private void drawHealthBar(Graphics g, Character character) {
-        Cell TLPixel = cellToTLPixel(character.cell);
+        Cell TLPixel = cellToTLDrawObjectPixel(character.cell);
         TLPixel.x += healthBarXPadding;
         TLPixel.y -= (cellSize/3);
         TLPixel.y += healthBarYPadding;
@@ -674,6 +668,8 @@ public class Board extends JPanel implements ActionListener, MouseMotionListener
         return topPixel;
     }
 
+
+
     public Cell cellToTLDrawPixel(Cell cell) {
         Cell topCell = cellToTopPixel(cell);
         topCell.x -= cellXDelta;
@@ -687,6 +683,18 @@ public class Board extends JPanel implements ActionListener, MouseMotionListener
         topCell.y += cellYDelta*2-1;
 
         return topCell;
+    }
+
+    public Cell cellToTLDrawObjectPixel(Cell cell) {
+        Cell adjustedCell = new Cell(cell);
+        // Use cell directly above the current cell
+        adjustedCell.x--;
+        adjustedCell.y--;
+        return cellToTLDrawPixel(adjustedCell);
+    }
+
+    public Cell cellToBRDrawObjectPixel(Cell cell) {
+        return cellToBRDrawPixel(cell);
     }
 
     public Cell cellToStartLeftThicknessPixel(Cell cell) {
@@ -724,20 +732,21 @@ public class Board extends JPanel implements ActionListener, MouseMotionListener
         return topCell;
     }
 
-    public Cell cellToBRRightThicknessPixel(Cell cell){
+    public Cell cellToBRRightThicknessPixel(Cell cell) {
         Cell topCell = cellToTopPixel(cell);
-        topCell.x += cellXDelta-1;
-        topCell.y += cellYDelta*2 + cellThickness;
+        topCell.x += cellXDelta - 1;
+        topCell.y += cellYDelta * 2 + cellThickness;
 
         return topCell;
     }
 
-    public boolean isBoardPixel(int x, int y) {
-        return  x >= backgroundXPadding &&
-                x < (numYCells*cellXDelta + numXCells*cellXDelta + backgroundXPadding) &&
-                y >= backgroundYPadding &&
-                y < (numYCells*cellYDelta + numXCells*cellYDelta + backgroundYPadding);
-    }
+    // Dead code (delete)
+//    public boolean isBoardPixel(int x, int y) {
+//        return  x >= backgroundXPadding &&
+//                x < (numYCells*cellXDelta + numXCells*cellXDelta + backgroundXPadding) &&
+//                y >= backgroundYPadding &&
+//                y < (numYCells*cellYDelta + numXCells*cellYDelta + backgroundYPadding);
+//    }
 
     public Cell pixelToCell(int x, int y) {
         Cell cell = new Cell(pixelToCellX(x,y),pixelToCellY(x,y));
