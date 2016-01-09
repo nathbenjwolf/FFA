@@ -45,6 +45,17 @@ public class Board extends JPanel implements ActionListener, MouseMotionListener
     public static int cellYDelta = 40;
     public static int cellXDelta = (int)(1.6 * (double)cellYDelta);
     public static int cellThickness = 30;
+    public static double cellSideSize = Math.sqrt(Math.pow(cellYDelta,2) + Math.pow(cellXDelta,2));
+
+    // Board Border Line Values
+    public static float yAxisSlope = -(float)cellYDelta/(float)cellXDelta; // negative slope because (0,0) is in top left corner of screen
+    public static float xAxisSlope = -yAxisSlope;
+    public float yAxisIntercept;
+    public float xAxisIntercept;
+    public Cell yAxisStartPoint;
+    public Cell yAxisEndPoint;
+    public Cell xAxisStartPoint;
+    public Cell xAxisEndPoint;
 
     // Animation timer constants
     static int animationTimerDelay = 100;
@@ -112,6 +123,9 @@ public class Board extends JPanel implements ActionListener, MouseMotionListener
             battle.team2.get(i).direction = Direction.LEFT;
         }
 
+        // calculate constant pixel values (need board size and shape before we can make these calculations)
+        initConstPixelValues();
+
         // Setup animation timer
         animationTick = 0;
         animationTimer = new Timer(animationTimerDelay, this);
@@ -125,7 +139,7 @@ public class Board extends JPanel implements ActionListener, MouseMotionListener
     public void paintComponent(Graphics g) {
         drawBackground(g);
         drawGround(g);
-        //drawCellIndicators(g);
+        drawCellIndicators(g);
         //drawObjects(g);
     }
 
@@ -271,10 +285,6 @@ public class Board extends JPanel implements ActionListener, MouseMotionListener
     }
 
     private void drawMoveCells(Graphics g) {
-        if(moveCells.size() == 0) {
-            return;
-        }
-
         Color fillColor = getPulseColor(moveCellColorFill);
         Color borderColor = getPulseColor(moveCellColorBorder);
         for(Cell cell: moveCells) {
@@ -409,9 +419,12 @@ public class Board extends JPanel implements ActionListener, MouseMotionListener
     }
 
     private void drawCellFill(Graphics g, Cell cell, Color color) {
-        g.setColor(color);
-        Cell topLeftPixel = cellToTLPixel(cell);
-        g.fillRect(topLeftPixel.x+gridLineThickness, topLeftPixel.y+gridLineThickness, cellSize-(gridLineThickness*2), cellSize-(gridLineThickness*2));
+        Shape s = getCellShape(cell);
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.setColor(color);
+        g2.fill(s);
+//        g.fillRect(topLeftPixel.x+gridLineThickness, topLeftPixel.y+gridLineThickness, cellSize-(gridLineThickness*2), cellSize-(gridLineThickness*2));
     }
 
     private void drawCellBorder(Graphics g, Cell cell, Color color) {
@@ -423,11 +436,20 @@ public class Board extends JPanel implements ActionListener, MouseMotionListener
 //        g.fillRect(topLeftPixel.x, topLeftPixel.y+cellSize-gridLineThickness, cellSize, gridLineThickness);
 //        g.fillRect(topLeftPixel.x+cellSize-gridLineThickness, topLeftPixel.y, gridLineThickness, cellSize);
 
+        Shape s = getCellShape(cell);
         Graphics2D g2 = (Graphics2D) g;
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.setColor(color);
         Stroke oldStroke = g2.getStroke();
         g2.setStroke(new BasicStroke(gridLineThickness));
-        g2.drawRect(topLeftPixel.x+gridLineThickness, topLeftPixel.y+gridLineThickness, cellSize-(gridLineThickness*2), cellSize-(gridLineThickness*2));
+        g2.draw(s);
         g2.setStroke(oldStroke);
+
+//        Graphics2D g2 = (Graphics2D) g;
+//        Stroke oldStroke = g2.getStroke();
+//        g2.setStroke(new BasicStroke(gridLineThickness));
+//        g2.drawRect(topLeftPixel.x+gridLineThickness, topLeftPixel.y+gridLineThickness, cellSize-(gridLineThickness*2), cellSize-(gridLineThickness*2));
+//        g2.setStroke(oldStroke);
     }
 
     private Shape getCellShape(Cell cell) {
@@ -632,6 +654,26 @@ public class Board extends JPanel implements ActionListener, MouseMotionListener
         return new Cell(xPixel, yPixel);
     }
 
+    // Upper of the two right pixels
+    public Cell cellToRightPixel(Cell cell) {
+        Cell topPixel = cellToTopPixel(cell);
+
+        topPixel.x += cellXDelta-1;
+        topPixel.y += cellYDelta-1;
+
+        return topPixel;
+    }
+
+    // Upper of the two left pixels
+    public Cell cellToLeftPixel(Cell cell) {
+        Cell topPixel = cellToTopPixel(cell);
+
+        topPixel.x -= cellXDelta;
+        topPixel.y += cellYDelta-1;
+
+        return topPixel;
+    }
+
     public Cell cellToTLDrawPixel(Cell cell) {
         Cell topCell = cellToTopPixel(cell);
         topCell.x -= cellXDelta;
@@ -692,16 +734,78 @@ public class Board extends JPanel implements ActionListener, MouseMotionListener
 
     public boolean isBoardPixel(int x, int y) {
         return  x >= backgroundXPadding &&
-                x < numXCells*cellSize + backgroundXPadding &&
+                x < (numYCells*cellXDelta + numXCells*cellXDelta + backgroundXPadding) &&
                 y >= backgroundYPadding &&
-                y < numYCells*cellSize + backgroundYPadding;
+                y < (numYCells*cellYDelta + numXCells*cellYDelta + backgroundYPadding);
     }
 
     public Cell pixelToCell(int x, int y) {
-        if(isBoardPixel(x,y)) {
-            return new Cell((x - backgroundXPadding) / cellSize, (y - backgroundYPadding) / cellSize);
+        Cell cell = new Cell(pixelToCellX(x,y),pixelToCellY(x,y));
+        if(cell.x == -1 || cell.y == -1) {
+            return null; // Cell out of bounds
         }
-        return null;
+        return cell;
+    }
+
+    public double getPixelDistance(Cell start, Cell end) {
+        return Math.sqrt(Math.pow(end.x - start.x, 2) + Math.pow(end.y - start.y, 2));
+    }
+
+    public int pixelToCellX(int x, int y) {
+        // Calculate y-intercept for pixel line
+        float yIntercept = y - yAxisSlope*x;
+
+        // X value of xAxis Pixel
+        float xPixel = (xAxisIntercept - yIntercept)/(yAxisSlope-xAxisSlope);
+
+        // Y value of xAxis Pixel
+        float yPixel = (xAxisSlope*yIntercept - yAxisSlope*xAxisIntercept) / (xAxisSlope - yAxisSlope);
+
+        // Check if the pixels are "in-bounds"
+        if(xPixel >= xAxisStartPoint.x && xPixel <= xAxisEndPoint.x &&
+                yPixel >= xAxisStartPoint.y && yPixel <= xAxisEndPoint.y) {
+            double distance = getPixelDistance(xAxisStartPoint, new Cell((int)xPixel, (int)yPixel));
+            int xCell = (int)(distance/cellSideSize);
+            return xCell;
+        } else {
+            return -1; // Pixel out of bounds
+        }
+    }
+
+    public int pixelToCellY(int x, int y) {
+        // Calculate y-intercept for pixel line
+        float yIntercept = y - xAxisSlope*x;
+
+        // X value of yAxis Pixel
+        float xPixel = (yAxisIntercept - yIntercept)/(xAxisSlope-yAxisSlope);
+
+        // Y value of xAxis Pixel
+        float yPixel = (yAxisSlope*yIntercept - xAxisSlope*yAxisIntercept) / (yAxisSlope - xAxisSlope);
+
+        // Check if the pixels are "in-bounds"
+        if(xPixel <= yAxisStartPoint.x && xPixel >= yAxisEndPoint.x &&
+                yPixel >= yAxisStartPoint.y && yPixel <= yAxisEndPoint.y) {
+            double distance = getPixelDistance(yAxisStartPoint, new Cell((int)xPixel, (int)yPixel));
+            int yCell = (int)(distance/cellSideSize);
+            return yCell;
+        } else {
+            return -1; // Pixel out of bounds
+        }
+    }
+
+    public void initConstPixelValues() {
+        // X-axis calculations
+        xAxisStartPoint = cellToTopPixel(new Cell(0,0));
+        xAxisEndPoint = cellToRightPixel(new Cell(numXCells-1,0));
+        xAxisIntercept = xAxisStartPoint.y - xAxisSlope*xAxisStartPoint.x;
+
+        // Y-axis calculations
+        yAxisStartPoint = cellToTopPixel(new Cell(0,0));
+        yAxisStartPoint.x--; // Left more of the two top pixels
+        yAxisEndPoint = cellToLeftPixel(new Cell(0,numYCells-1));
+        yAxisIntercept = yAxisStartPoint.y - yAxisSlope*yAxisStartPoint.x;
+
+        return;
     }
 
     @Override

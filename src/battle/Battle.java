@@ -135,8 +135,8 @@ public class Battle extends JFrame implements MouseListener{
         Object sourcePanel = e.getSource();
         if(sourcePanel instanceof Board) {
             System.err.println("Board was clicked: (" + e.getX() + "," + e.getY() + ")");
-            if(board.isBoardPixel(e.getX(), e.getY())) {
-                Cell cell = board.pixelToCell(e.getX(), e.getY());
+            Cell cell = board.pixelToCell(e.getX(), e.getY());
+            if(cell != null) {
                 System.err.println("Board was clicked: (" + cell.x + "," + cell.y + ")");
                 currentGameState.onBoardClicked(cell);
             }
