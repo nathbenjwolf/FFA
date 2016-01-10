@@ -1,6 +1,7 @@
 package mapElement;
 
 import battle.Board;
+import battle.CellPixelAbstraction;
 import character.Character;
 
 import javax.imageio.ImageIO;
@@ -23,16 +24,18 @@ public class Water extends GroundElement {
         BufferedImage finalImg;
         int numFrames = img.getWidth();
         int xPixel = (int) (tick % numFrames);
-        if(xPixel + Board.cellSize > numFrames) {
+        int cellWidth = CellPixelAbstraction.cellXDelta*2;
+        int cellHeight = CellPixelAbstraction.cellYDelta*2;
+        if(xPixel + cellWidth > numFrames) {
             // Merge the images from either end to make the animation seem infinite
             int remainingXPixels = numFrames-xPixel;
-            BufferedImage img1 = img.getSubimage(xPixel, 0, remainingXPixels, Board.cellSize);
-            BufferedImage img2 = img.getSubimage(0, 0, Board.cellSize-remainingXPixels, Board.cellSize);
-            finalImg = new BufferedImage(Board.cellSize, Board.cellSize, img.getType());
+            BufferedImage img1 = img.getSubimage(xPixel, 0, remainingXPixels, cellHeight);
+            BufferedImage img2 = img.getSubimage(0, 0, cellWidth-remainingXPixels, cellHeight);
+            finalImg = new BufferedImage(cellWidth, cellHeight, img.getType());
             finalImg.createGraphics().drawImage(img1, 0, 0, null);
             finalImg.createGraphics().drawImage(img2, remainingXPixels, 0, null);
         } else {
-            finalImg = img.getSubimage(xPixel, 0, Board.cellSize, Board.cellSize);
+            finalImg = img.getSubimage(xPixel, 0, cellWidth, cellHeight);
         }
 
         return finalImg;
