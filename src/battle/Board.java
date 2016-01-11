@@ -7,7 +7,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
-import java.awt.geom.GeneralPath;
 import java.awt.image.BufferedImage;
 import java.util.*;
 import java.util.List;
@@ -16,7 +15,6 @@ import java.util.Set;
 import ability.Ability;
 import character.Character;
 import mapElement.MapCell;
-import mapElement.MapElement;
 import utils.Orientation;
 import utils.Orientation.Direction;
 import utils.PathFinding;
@@ -55,6 +53,10 @@ public class Board extends JPanel implements ActionListener, MouseMotionListener
     static Color activeCharacterCellColorFill = new Color(0.855F, 0.647F, 0.125F);
     static Color activeCharacterCellColorBorder = new Color(0.824F, 0.412F, 0.118F);
 
+    // Cursor Cell Constants
+    static Color cursorCellColorFill = new Color(0.555F, 0.444F, 0.555F);
+    static Color cursorCellColorBorder = new Color(0.555F, 0.222F, 0.555F);
+
     int numXCells;
     int numYCells;
     MapCell[][] map;
@@ -62,7 +64,7 @@ public class Board extends JPanel implements ActionListener, MouseMotionListener
     Set<Cell> abilityTargetCells = new HashSet<>();
     Set<Cell> abilityRangeCells = new HashSet<>();
     Set<Cell> orientationCells = new HashSet<>();
-    Cell mouseHoverCell;
+    Cell cursorCell;
 
     private Battle battle;
     private CellPixelAbstraction cpa;
@@ -135,6 +137,7 @@ public class Board extends JPanel implements ActionListener, MouseMotionListener
         drawAbilityCells(g);
         drawOrientationCells(g);
         drawActiveCharacterCell(g);
+        drawCursorCell(g);
     }
 
     private void drawObjects(Graphics g) {
@@ -238,6 +241,15 @@ public class Board extends JPanel implements ActionListener, MouseMotionListener
         drawCellBorder(g, battle.activeCharacter.cell, borderColor);
     }
 
+    private void drawCursorCell(Graphics g) {
+        if(cursorCell != null) {
+            Color fillColor = getPulseColor(cursorCellColorFill);
+            Color borderColor = getPulseColor(cursorCellColorBorder);
+            drawCellFill(g, cursorCell, fillColor);
+            drawCellBorder(g, cursorCell, borderColor);
+        }
+    }
+
     private Color getPulseColor(Color color) {
         return new Color((float)color.getRed()/255F,
                          (float)color.getGreen()/255F,
@@ -273,7 +285,7 @@ public class Board extends JPanel implements ActionListener, MouseMotionListener
                         0, 0, img.getWidth(), img.getHeight(),
                         null);
 
-                if(mouseHoverCell != null && mouseHoverCell.equals(character.cell)) {
+                if(cursorCell != null && cursorCell.equals(character.cell)) {
                     drawHealthBar(g, character);
                 }
             }
@@ -468,7 +480,7 @@ public class Board extends JPanel implements ActionListener, MouseMotionListener
 
     @Override
     public void mouseMoved(MouseEvent e) {
-        mouseHoverCell = cpa.pixelToCell(e.getPoint().x, e.getPoint().y);
+        cursorCell = cpa.pixelToCell(e.getPoint().x, e.getPoint().y);
         repaint();
     }
 }
