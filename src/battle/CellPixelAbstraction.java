@@ -2,6 +2,8 @@ package battle;
 
 import java.awt.*;
 import java.awt.geom.GeneralPath;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by Nathan on 1/10/2016.
@@ -37,9 +39,20 @@ public class CellPixelAbstraction {
     int numXCells;
     int numYCells;
 
+    // Cached values
+    Map<Cell,Shape> cachedCellSurfaceShapes;
+    Map<Cell,Shape> cachedCellLThicknessShapes;
+    Map<Cell,Shape> cachedCellRThicknessShapes;
+    Map<Cell,Cell> cachedCellToTopPixel;
+
     public CellPixelAbstraction(int numXCells, int numYCells) {
         this.numXCells = numXCells;
         this.numYCells = numYCells;
+
+        this.cachedCellSurfaceShapes = new HashMap<>();
+        this.cachedCellLThicknessShapes = new HashMap<>();
+        this.cachedCellRThicknessShapes = new HashMap<>();
+        this.cachedCellToTopPixel = new HashMap<>();
 
         init();
     }
@@ -70,6 +83,11 @@ public class CellPixelAbstraction {
     }
 
     public Shape getCellShape(Cell cell) {
+        // Check if we already have this shape saved
+        if(cachedCellSurfaceShapes.containsKey(cell)) {
+            return new GeneralPath(cachedCellSurfaceShapes.get(cell));
+        }
+
         Cell topPixel = cellToTopPixel(cell);
 
         GeneralPath path = new GeneralPath();
@@ -102,11 +120,18 @@ public class CellPixelAbstraction {
 
         path.closePath();
 
+        // Cache the shape for next time
+        cachedCellSurfaceShapes.put(new Cell(cell), new GeneralPath(path));
         return path;
     }
 
     // Left thickness (modified y-axis)
     public Shape getLeftCellThicknessShape(Cell cell) {
+        // Check if we already have this shape saved
+        if(cachedCellLThicknessShapes.containsKey(cell)) {
+            return new GeneralPath(cachedCellLThicknessShapes.get(cell));
+        }
+
         Cell startPixel = cellToStartLeftThicknessPixel(cell);
 
         GeneralPath path = new GeneralPath();
@@ -127,11 +152,18 @@ public class CellPixelAbstraction {
 
         path.closePath();
 
+        // Cache the shape for next time
+        cachedCellLThicknessShapes.put(new Cell(cell), new GeneralPath(path));
         return path;
     }
 
     // Right thickness (modified x-axis)
     public Shape getRightCellThicknessShape(Cell cell) {
+        // Check if we already have this shape saved
+        if(cachedCellRThicknessShapes.containsKey(cell)) {
+            return new GeneralPath(cachedCellRThicknessShapes.get(cell));
+        }
+
         Cell startPixel = cellToStartRightThicknessPixel(cell);
 
         GeneralPath path = new GeneralPath();
@@ -152,11 +184,18 @@ public class CellPixelAbstraction {
 
         path.closePath();
 
+        // Cache the shape for next time
+        cachedCellRThicknessShapes.put(new Cell(cell), new GeneralPath(path));
         return path;
     }
 
     // Right top pixel (there are two top pixels)
     public Cell cellToTopPixel(Cell cell) {
+        // Check if we already have this conversion saved
+        if(cachedCellToTopPixel.containsKey(cell)) {
+            return new Cell(cachedCellToTopPixel.get(cell));
+        }
+
         // (0,0) top cell
         int xPixel = cellXDelta*numYCells + backgroundXPadding;
         int yPixel = backgroundTopYPadding;
@@ -169,6 +208,8 @@ public class CellPixelAbstraction {
         xPixel += cellXDelta*cell.x;
         yPixel += cellYDelta*cell.x;
 
+        // Cache the conversion
+        cachedCellToTopPixel.put(new Cell(cell), new Cell(xPixel, yPixel));
         return new Cell(xPixel, yPixel);
     }
 
